@@ -1,17 +1,19 @@
 [project]
-name = "app-template"
+name = "enip-cip-interface"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pydoover>=0.4.10",
+    "pydoover>=0.4.11",
+    "cpppo>=5.2.5",
+    "pylogix>=1.0.7",
     "transitions>=0.9.2",
 ]
 
 [project.scripts]
-doover-app-run = "app_template:main"
-export-config = "app_template.app_config:export"
+doover-app-run = "enip_cip_interface:main"
+export-config = "enip_cip_interface.app_config:export"
 
 [build-system]
 requires = ["hatchling"]

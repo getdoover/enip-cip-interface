@@ -92,41 +92,6 @@ wheels = [
 ]
 
 [[package]]
-name = "app-template"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "pydoover" },
-    { name = "transitions" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "aiohttp" },
-    { name = "grpcio" },
-    { name = "protobuf" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "requests" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "pydoover", specifier = ">=0.4.10" },
-    { name = "transitions", specifier = ">=0.9.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "aiohttp", specifier = ">=3.11.18" },
-    { name = "grpcio", specifier = ">=1.71.0" },
-    { name = "protobuf", specifier = ">=6.30.2" },
-    { name = "pytest", specifier = ">=8.3.5" },
-    { name = "pytest-asyncio", specifier = ">=0.26.0" },
-    { name = "requests", specifier = ">=2.32.3" },
-]
-
-[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -143,6 +108,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/e8/9e/c05b3920a3b7d20d3
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4a/7e/3db2bd1b1f9e95f7cddca6d6e75e2f2bd9f51b1246e546d88addca0106bd/certifi-2025.4.26-py3-none-any.whl", hash = "sha256:30350364dfe371162649852c63336a15c70c6510c2ad5015b21c2345311805f3", size = 159618, upload-time = "2025-04-26T02:12:27.662Z" },
 ]
+
+[[package]]
+name = "chacha20poly1305"
+version = "0.0.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/38/2c/5b4eb73c5cb30ded3082af025e76f529764971c57c02b101e842ff998f63/chacha20poly1305-0.0.3.tar.gz", hash = "sha256:f2f005c7cf4638ffa4ff06c02c78748068b642916795c6d16c7cc5e355e70edf", size = 5139, upload-time = "2020-01-05T11:22:02.737Z" }
 
 [[package]]
 name = "charset-normalizer"
@@ -193,12 +164,104 @@ wheels = [
 ]
 
 [[package]]
+name = "click"
+version = "8.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/60/6c/8ca2efa64cf75a977a0d7fac081354553ebe483345c734fb6b6515d96bbc/click-8.2.1.tar.gz", hash = "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202", size = 286342, upload-time = "2025-05-20T23:19:49.832Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/32/10bb5764d90a8eee674e9dc6f4db6a0ab47c8c4d0d83c27f7c39ac415a4d/click-8.2.1-py3-none-any.whl", hash = "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b", size = 102215, upload-time = "2025-05-20T23:19:47.796Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697, upload-time = "2022-10-25T02:36:22.414Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
+]
+
+[[package]]
+name = "cpppo"
+version = "5.2.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "crypto-licensing" },
+    { name = "greenery" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b0/43/f8bb5715de6f74a3cd5766bf1725a09a2230a8cd742d8333d28a40d65c49/cpppo-5.2.5.tar.gz", hash = "sha256:4b2b86a61e15fce9df865a023dcf839f57d4a7ba2da6ea33dbf300f5ddf7fea2", size = 498091, upload-time = "2025-02-18T17:52:22.982Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a0/0f/f13562e48b28efdbc418d52a3ab37c25d7d24e4ed461dfd1a61c78cf36c5/cpppo-5.2.5-py3-none-any.whl", hash = "sha256:0257ba393f1e2bdd06ea712cead740e496c802b3e5275c1995ee2df31f29ed1c", size = 472444, upload-time = "2025-02-18T17:52:20.14Z" },
+]
+
+[[package]]
+name = "crypto-licensing"
+version = "5.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "chacha20poly1305" },
+    { name = "click" },
+    { name = "dnspython" },
+    { name = "future" },
+    { name = "pytz-deprecation-shim" },
+    { name = "requests" },
+    { name = "requests-toolbelt" },
+    { name = "tzlocal" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/80/c9/ca0e0db003180cacef524160dbb81c83ea821fd8aa641745f656b656bc57/crypto_licensing-5.2.2.tar.gz", hash = "sha256:68873fabbcd9ad7071dac27302b279f03e036c078c5f6d9c172190e151fd3f6f", size = 145133, upload-time = "2025-01-13T00:09:22.92Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/97/0e/fa9d517d3eac9b0002e9c2559f7f49b80efd98004c9b95b50fdf6daddcd6/crypto_licensing-5.2.2-py3-none-any.whl", hash = "sha256:c258b7cba8dc402c31261a8e66fe9b2690bcaff2d2614e9b9ae6307808f9fe62", size = 151567, upload-time = "2025-01-13T00:09:19.731Z" },
+]
+
+[[package]]
+name = "dnspython"
+version = "2.7.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b5/4a/263763cb2ba3816dd94b08ad3a33d5fdae34ecb856678773cc40a3605829/dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1", size = 345197, upload-time = "2024-10-05T20:14:59.362Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86", size = 313632, upload-time = "2024-10-05T20:14:57.687Z" },
+]
+
+[[package]]
+name = "enip-cip-interface"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "cpppo" },
+    { name = "pydoover" },
+    { name = "pylogix" },
+    { name = "transitions" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "aiohttp" },
+    { name = "grpcio" },
+    { name = "protobuf" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "requests" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cpppo", specifier = ">=5.2.5" },
+    { name = "pydoover", specifier = ">=0.4.11" },
+    { name = "pylogix", specifier = ">=1.0.7" },
+    { name = "transitions", specifier = ">=0.9.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "aiohttp", specifier = ">=3.11.18" },
+    { name = "grpcio", specifier = ">=1.71.0" },
+    { name = "protobuf", specifier = ">=6.30.2" },
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-asyncio", specifier = ">=0.26.0" },
+    { name = "requests", specifier = ">=2.32.3" },
 ]
 
 [[package]]
@@ -277,6 +340,21 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ae/f5/79c9320c5656b1965634fe4be9c82b12a3305bdbc58ad9cb941131107b20/frozenlist-1.6.0-cp313-cp313t-win_amd64.whl", hash = "sha256:e18036cb4caa17ea151fd5f3d70be9d354c99eb8cf817a3ccde8a7873b074348", size = 134709, upload-time = "2025-04-17T22:38:15.551Z" },
     { url = "https://files.pythonhosted.org/packages/71/3e/b04a0adda73bd52b390d730071c0d577073d3d26740ee1bad25c3ad0f37b/frozenlist-1.6.0-py3-none-any.whl", hash = "sha256:535eec9987adb04701266b92745d6cdcef2e77669299359c3009c3404dd5d191", size = 12404, upload-time = "2025-04-17T22:38:51.668Z" },
 ]
+
+[[package]]
+name = "future"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/b2/4140c69c6a66432916b26158687e821ba631a4c9273c474343badf84d3ba/future-1.0.0.tar.gz", hash = "sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05", size = 1228490, upload-time = "2024-02-21T11:52:38.461Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/da/71/ae30dadffc90b9006d77af76b393cb9dfbfc9629f339fc1574a1c52e6806/future-1.0.0-py3-none-any.whl", hash = "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216", size = 491326, upload-time = "2024-02-21T11:52:35.956Z" },
+]
+
+[[package]]
+name = "greenery"
+version = "2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/48/24/7e19b1939370b0b0ed301af37f12124cd9c03db43bfcc2101d88d877e3c8/greenery-2.1.tar.gz", hash = "sha256:759c3bf40b6fe6ef0a6b373230d07470e0e315f32bcdbaf381901b0d8a6f91d1", size = 30087, upload-time = "2014-10-17T22:42:33.049Z" }
 
 [[package]]
 name = "grpcio"
@@ -518,15 +596,23 @@ wheels = [
 
 [[package]]
 name = "pydoover"
-version = "0.4.10"
+version = "0.4.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/33/92de76104f6efcf54f4df0c80f1d0beed7c9c8cb1da3149ad5e65338c87e/pydoover-0.4.10.tar.gz", hash = "sha256:d55b4a0691811c2100fa3539fd2ac5db39216759bc2690816272ee7c83ac76c9", size = 197233, upload-time = "2025-07-07T05:08:47.425Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/23/c3/5f700a472174432817324dd365ea43d4fffdbba91c2ca1f1c3f1d42b2865/pydoover-0.4.11.tar.gz", hash = "sha256:e381ae26fb7c89293e134969767d6edcbfd9f0dd30946e92b425b1e062597a0d", size = 198323, upload-time = "2025-07-16T06:09:13.035Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/29/494530d93134d71bfb011f3485fad494734dd147c629120afa8671e80784/pydoover-0.4.10-py3-none-any.whl", hash = "sha256:6380348e8a0e0a696f5ea487eeb4e0e5f893651aa6f6706d58266e917bc6a5fc", size = 142044, upload-time = "2025-07-07T05:08:46.339Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/a4/3050ffbcf529071a2401177d0469bf442408596ac391ddf96c56262de0e4/pydoover-0.4.11-py3-none-any.whl", hash = "sha256:ef3b85ad4b3753cc1a72bb29374d7cd87f051da453a5470a1e0fc46399d8b1fb", size = 143031, upload-time = "2025-07-16T06:09:11.755Z" },
+]
+
+[[package]]
+name = "pylogix"
+version = "1.0.7"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/1e/e4b6692cf1b764e70e98aee981b7053abc4e7d154f1ff3f04b4cbe2c9db2/pylogix-1.0.7-py2.py3-none-any.whl", hash = "sha256:a82dbc9f39597ec88726c172b32ae885c7366121c5daa936546d577b7105656d", size = 77377, upload-time = "2025-05-30T14:21:14.947Z" },
 ]
 
 [[package]]
@@ -557,6 +643,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pytz-deprecation-shim"
+version = "0.1.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/94/f0/909f94fea74759654390a3e1a9e4e185b6cd9aa810e533e3586f39da3097/pytz_deprecation_shim-0.1.0.post0.tar.gz", hash = "sha256:af097bae1b616dde5c5744441e2ddc69e74dfdcb0c263129610d85b87445a59d", size = 60190, upload-time = "2020-06-17T16:16:30.062Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/73/3eaab547ca809754e67e06871cff0fc962bafd4b604e15f31896a0f94431/pytz_deprecation_shim-0.1.0.post0-py2.py3-none-any.whl", hash = "sha256:8314c9692a636c8eb3bda879b9f119e350e93223ae83e70e80c31675a0fdc1a6", size = 15734, upload-time = "2020-06-17T16:16:28.849Z" },
+]
+
+[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
@@ -569,6 +667,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/63/70/2bf7780ad2d390a8d301ad0b550f1581eadbd9a20f896afe06353c2a2913/requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760", size = 131218, upload-time = "2024-05-29T15:37:49.536Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6", size = 64928, upload-time = "2024-05-29T15:37:47.027Z" },
+]
+
+[[package]]
+name = "requests-toolbelt"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f3/61/d7545dafb7ac2230c70d38d31cbfe4cc64f7144dc41f6e4e4b78ecd9f5bb/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6", size = 206888, upload-time = "2023-05-01T04:11:33.229Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06", size = 54481, upload-time = "2023-05-01T04:11:28.427Z" },
 ]
 
 [[package]]
@@ -590,6 +700,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4a/82/4dfbb3cf62501cb3e8d026cbeb2d5cdeaf5bfe916ea50d3a9435faa2b0e1/transitions-0.9.2.tar.gz", hash = "sha256:2f8490dbdbd419366cef1516032ab06d07ccb5839ef54905e842a472692d4204", size = 1188079, upload-time = "2024-08-06T13:32:49.722Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/47/852f96b115425618382472ea06860069da5bb078bdec3e4449f185a40e07/transitions-0.9.2-py2.py3-none-any.whl", hash = "sha256:f7b40c9b4a93869f36c4d1c33809aeb18cdeeb065fd1adba018ee39c3db216f3", size = 111773, upload-time = "2024-08-06T13:32:46.703Z" },
+]
+
+[[package]]
+name = "tzdata"
+version = "2025.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/32/1a225d6164441be760d75c2c42e2780dc0873fe382da3e98a2e1e48361e5/tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9", size = 196380, upload-time = "2025-03-23T13:54:43.652Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8", size = 347839, upload-time = "2025-03-23T13:54:41.845Z" },
+]
+
+[[package]]
+name = "tzlocal"
+version = "5.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761, upload-time = "2025-03-05T21:17:41.549Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d", size = 18026, upload-time = "2025-03-05T21:17:39.857Z" },
 ]
 
 [[package]]

@@ -1,16 +1,15 @@
 {
-    "sample_application": {
-        "key": "32134bbb-5278-43c0-a6ca-4046a5edeb9f",
-        "name": "sample_application",
-        "display_name": "Sample Application",
+    "enip_cip_interface": {
+        "name": "enip_cip_interface",
+        "display_name": "ENIP CIP Interface",
         "type": "DEV",
         "visibility": "PUB",
         "allow_many": true,
-        "description": "A template application for Doover",
+        "description": "A Doover App to provide an EtherNet/IP (CIP) interface",
         "long_description": "README.md",
         "depends_on": [],
         "owner_org_key": "",
-        "image_name": "ghcr.io/getdoover/app_template",
+        "image_name": "ghcr.io/getdoover/enip_cip_interface:latest",
         "container_registry_profile_key": "",
         "build_args": "--platform linux/amd64,linux/arm64",
         "config_schema": {
@@ -19,33 +18,19 @@
             "title": "Application Config",
             "type": "object",
             "properties": {
-                "digital_outputs_enabled": {
-                    "title": "Digital Outputs Enabled",
-                    "x-name": "digital_outputs_enabled",
+                "port": {
+                    "title": "Port",
+                    "x-name": "port",
                     "x-hidden": false,
-                    "type": "boolean",
-                    "default": true
-                },
-                "a_funny_message": {
-                    "title": "A Funny Message",
-                    "x-name": "a_funny_message",
-                    "x-hidden": false,
-                    "type": "string"
-                },
-                "simulator_app_key": {
-                    "format": "doover-application",
-                    "title": "Simulator App Key",
-                    "x-name": "simulator_app_key",
-                    "x-hidden": false,
-                    "type": "string",
-                    "description": "The app key for the simulator"
+                    "type": "integer",
+                    "description": "The port to listen on for the ENIP server",
+                    "default": 44818
                 }
             },
             "additionalElements": true,
-            "required": [
-                "a_funny_message",
-                "simulator_app_key"
-            ]
-        }
+            "required": []
+        },
+        "owner_org": "36a22e32-ab81-4a39-b400-869d532a052d",
+        "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e"
     }
 }

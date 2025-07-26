@@ -15,7 +15,7 @@ pyproject.toml      <-- Python project configuration file (including dependencie
 Dockerfile          <-- Dockerfile for building the application image
 doover_config.json  <-- Configuration file for doover
 
-src/app_template/   <-- Application directory
+src/enip_cip_interface/   <-- Application directory
   application.py    <-- Main application code
   app_config.py     <-- Config schema definition
   app_ui.py         <-- UI code (if applicable)
