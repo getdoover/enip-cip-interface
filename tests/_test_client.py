@@ -13,6 +13,13 @@ ALL_TAGS = [
     "global_status",
 ]
 
+# ALL_TAGS = [
+#     "Temperature",
+#     "Pressure",
+#     "Status",
+#     "FlowRate",
+# ]
+
 def main() -> None:
 
     # Initialize PLC connection

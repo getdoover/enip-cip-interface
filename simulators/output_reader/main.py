@@ -1,8 +1,10 @@
-
+import os
 import logging
 import time
+import random
 from pylogix import PLC
 
+logging.basicConfig(level=logging.INFO)
 
 # All tags from the EtherNet/IP server configuration
 ALL_TAGS = [
@@ -15,12 +17,10 @@ ALL_TAGS = [
 
 def main() -> None:
 
-    # Initialize PLC connection
-    plc_host = '127.0.0.1'  # EtherNet/IP server address
+    # Get the PLC host from the environment variable if it exists
+    plc_host = os.getenv("PLC_HOST", "127.0.0.1")
 
-    logging.info(f"Starting EtherNet/IP to Foxglove bridge")
     logging.info(f"Connecting to PLC at {plc_host}")
-    logging.info(f"Streaming {len(ALL_TAGS)} tags to Foxglove")
 
     try:
         with PLC() as comm:
@@ -36,6 +36,7 @@ def main() -> None:
                 for tag_name in ALL_TAGS:
                     try:
                         # Read value from PLC
+                        logging.info(f"Reading {tag_name}")
                         result = comm.Read(tag_name)
 
                         if result.Status == "Success" and result.Value is not None:
@@ -46,6 +47,10 @@ def main() -> None:
 
                     except Exception as e:
                         logging.error(f"Error reading tag {tag_name}: {e}")
+
+                # Write a random value to the global_value tag
+                logging.info(f"Writing to global_value: {random.random()}")
+                comm.Write("global_value", random.random())
 
                 time.sleep(5)
     except KeyboardInterrupt:

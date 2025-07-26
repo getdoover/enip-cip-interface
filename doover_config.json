@@ -31,6 +31,9 @@
             "required": []
         },
         "owner_org": "36a22e32-ab81-4a39-b400-869d532a052d",
-        "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e"
+        "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e",
+        "key": "faa9f767-dbb1-40e8-bd1f-e81bc83f5dff",
+        "repo_branch": "main",
+        "staging_config": {}
     }
 }

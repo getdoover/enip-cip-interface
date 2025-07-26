@@ -232,7 +232,6 @@ source = { editable = "." }
 dependencies = [
     { name = "cpppo" },
     { name = "pydoover" },
-    { name = "pylogix" },
     { name = "transitions" },
 ]
 
@@ -250,7 +249,6 @@ dev = [
 requires-dist = [
     { name = "cpppo", specifier = ">=5.2.5" },
     { name = "pydoover", specifier = ">=0.4.11" },
-    { name = "pylogix", specifier = ">=1.0.7" },
     { name = "transitions", specifier = ">=0.9.2" },
 ]
 
@@ -605,14 +603,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/23/c3/5f700a472174432817324dd365ea43d4fffdbba91c2ca1f1c3f1d42b2865/pydoover-0.4.11.tar.gz", hash = "sha256:e381ae26fb7c89293e134969767d6edcbfd9f0dd30946e92b425b1e062597a0d", size = 198323, upload-time = "2025-07-16T06:09:13.035Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/a4/3050ffbcf529071a2401177d0469bf442408596ac391ddf96c56262de0e4/pydoover-0.4.11-py3-none-any.whl", hash = "sha256:ef3b85ad4b3753cc1a72bb29374d7cd87f051da453a5470a1e0fc46399d8b1fb", size = 143031, upload-time = "2025-07-16T06:09:11.755Z" },
-]
-
-[[package]]
-name = "pylogix"
-version = "1.0.7"
-source = { registry = "https://pypi.org/simple" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/1e/e4b6692cf1b764e70e98aee981b7053abc4e7d154f1ff3f04b4cbe2c9db2/pylogix-1.0.7-py2.py3-none-any.whl", hash = "sha256:a82dbc9f39597ec88726c172b32ae885c7366121c5daa936546d577b7105656d", size = 77377, upload-time = "2025-05-30T14:21:14.947Z" },
 ]
 
 [[package]]

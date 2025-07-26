@@ -2,37 +2,33 @@ import time
 import random
 import sys
 import logging
+import asyncio
+import traceback
 from typing import List, Any, Dict
 
-from multiprocessing import Process
+from multiprocessing import Process, Manager, Event, Lock
 
 import cpppo
 from cpppo.server.enip import device
 from cpppo.server.enip.main import tags, main as enip_main
-
-from pylogix import PLC
 
 """
 Ethernet/IP Server For Doover
 Based on cpppo server example:
 https://github.com/pjkundert/cpppo/blob/master/server/enip/simulator_example.py
 
-
-Seems like this needs to have two parts:
-1. A cpppo server that runs in the background (cpppo)
-2. A client that can be used to read and write new values to the server (pylogix)
+This implementation uses:
+1. A cpppo server that runs in a separate process (cpppo)
+2. Shared memory for communication between the main process and the server process
+3. External clients (like pylogix) can connect to read/write tags
 """
 
 class EnipTag:
-    def __init__(self, name: str, current_value: Any = None, default_value: str = None, tag_type: str = None, description: str = None, units: str = None, min_value: float = None, max_value: float = None):
+    def __init__(self, name: str, current_value: Any = None, default_value: str = None, tag_type: str = None):
         self.name = name
         self._tag_type = tag_type
         self._default_value = default_value or 0.0
         self._current_value = current_value
-        self.description = description
-        self.units = units
-        self.min_value = min_value
-        self.max_value = max_value
 
     def has_changed(self, compare: Any, exclude_values: bool = True):
         if not isinstance(compare, EnipTag):
@@ -88,46 +84,118 @@ class EnipTag:
     def current_value(self, value: Any):
         self._current_value = value
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "current_value": self.current_value,
+            "default_value": self.default_value,
+            "tag_type": self.tag_type,
+            "cpppo_arg": self.cppp0_arg,
+        }
+
     def __str__(self):
         return f"{self.name} ({self.tag_type}) {self.current_value}"
     
     def __repr__(self):
         return f"{self.name} ({self.tag_type}) {self.current_value}"
 
+class EnipReadOp:
+    def __init__(self, tag: str, timestamp: float):
+        self.tag_name: str = tag
+        self.timestamp: float = timestamp
+
+class EnipWriteOp:
+    def __init__(self, tag: str, value: Any, timestamp: float):
+        self.tag_name: str = tag
+        self.value: Any = value
+        self.timestamp: float = timestamp
+
 class EnipServer:
 
-    def __init__(self, tags: List[EnipTag], cpppo_log_level: int = logging.WARNING):
+    def __init__(self, port: int = 44818, tags: List[EnipTag] = None, cpppo_log_level: int = logging.WARNING):
+        self.port = port
+
         self.tags: Dict[str, EnipTag] = {tag.name: tag for tag in tags}
         self._prev_tags = tags
+        
+        # Shared state for the cpppo server which is run in a separate process
+        self._process_lock = Lock()
         self._process = None
+        self._manager = Manager()
+        self._shared_tags = self._manager.dict()
+        self._read_operations = self._manager.list()
+        self._write_operations = self._manager.list()
+        self._write_received = self._manager.Event()
+        
         self.cpppo_log_level = cpppo_log_level # Logging level for cpppo, it is very verbose
-        self.open_client()
-        self.start()
+        # Remove pylogix client - we don't need it since we control the server directly
+        with self._process_lock:
+            self.start()
 
-    def open_client(self, ip_address: str = "127.0.0.1", port: int = 44818):
-        self._updater_client = PLC()
-        self._updater_client.IPAddress = ip_address
-        self._updater_client.Port = port
+    # Remove the open_client method since we don't need the pylogix client
 
     def write_tags(self, values: Dict[str, Any]):
+        """Update tag values directly in shared memory - no need for external client"""
         for k, v in values.items():
             if k not in self.tags.keys():
                 raise ValueError(f"Tag {k} not found")
             ## Update the current value for the tag
             self.tags[k].current_value = v
-            ## Update the value in the client
-            self._updater_client.Write(k, v)
+
+        self._maybe_restart()
+        # Sync the updated values to shared memory for the cpppo server
+        self._sync_shared_tags()
 
     def set_tags(self, tags: List[EnipTag]):
         self.tags = {tag.name: tag for tag in tags}
-        self.maybe_restart()
+        self._maybe_restart()
 
     def add_tag(self, tag: EnipTag):
         logging.info(f"Adding tag: {tag.name}")
         self.tags[tag.name] = tag
-        self.maybe_restart()
+        self._maybe_restart()
 
-    def have_tags_changed(self):
+    def pop_read_operations(self) -> List[EnipReadOp]:
+        result = [EnipReadOp(**op) for op in self._read_operations]
+        self._read_operations[:] = []  # Clear the list safely
+        return result
+    
+    def pop_write_operations(self) -> List[EnipWriteOp]:
+        result = [EnipWriteOp(**op) for op in self._write_operations]
+        self._write_received.clear()
+        self._write_operations[:] = []  # Clear the list safely
+        return result
+    
+    async def await_write_received(self):
+        while not self._write_received.is_set():
+            await asyncio.sleep(0.2)
+
+    def create_shared_memory(self):
+        self._manager = Manager()
+        self._shared_tags = self._manager.dict()
+        self._read_operations = self._manager.list()
+        self._write_operations = self._manager.list()
+        self._write_received = self._manager.Event()
+
+    def _is_shared_memory_valid(self):
+        """Check if shared memory objects are still valid"""
+        try:
+            # Try to access the shared objects to see if they're still valid
+            _ = len(self._shared_tags)
+            _ = len(self._read_operations)
+            _ = len(self._write_operations)
+            return True
+        except Exception:
+            return False
+
+    def _sync_shared_tags(self):
+        if not self._is_shared_memory_valid():
+            self.restart_server()
+
+        for k, v in self.tags.items():
+            self._shared_tags[k] = v.to_dict()
+
+    def _have_tags_changed(self):
         result = False
         if len(self.tags) != len(self._prev_tags):
             result = True
@@ -142,15 +210,31 @@ class EnipServer:
         self._prev_tags = self.tags.copy()
         return result
     
-    def maybe_restart(self):
-        if not self.have_tags_changed():
+    def _maybe_restart(self):
+        if not self._have_tags_changed():
             return
+        self.restart_server()
+
+    def restart_server(self):
+        self.create_shared_memory()
         logging.warning("RESTARTING CPPPO SERVER FOR NEW TAGS")
-        self.stop()
-        self.start()
+        with self._process_lock:
+            self.stop()
+            self.start()
 
     def start(self):
-        self._process = Process(target=self.main, args=(self.tags, self.cpppo_log_level))
+        self._sync_shared_tags()
+        self._process = Process(
+            target=self.main,
+            args=(
+                self._shared_tags,
+                self._read_operations,
+                self._write_operations,
+                self._write_received,
+                self.port,
+                self.cpppo_log_level
+            )
+        )
         self._process.daemon = True
         self._process.start()
 
@@ -160,7 +244,17 @@ class EnipServer:
             self._process = None
 
     @staticmethod
-    def main( tags_dict: Dict[str, EnipTag], cpppo_log_level: int = logging.WARNING, argv=None, idle_service=None, **kwargs ):
+    def main(
+            tags_dict: Dict[str, Any],
+            read_operations: List[str],
+            write_operations: List[str],
+            write_received: Event,
+            port: int = 44818,
+            cpppo_log_level: int = logging.WARNING,
+            argv=None,
+            idle_service=None,
+            **kwargs
+        ):
         """
         The main function for the cpppo server that is run in a separate process.
         More info here:
@@ -168,11 +262,13 @@ class EnipServer:
         """
         
         if argv is None:
-            argv			= sys.argv[1:]
+            argv = []
+        
+        argv.append(f"--address=0.0.0.0:{port}")
 
         ## For each tag, get add them to the argv
         for name, tag in tags_dict.items():
-            argv.append(tag.cppp0_arg)
+            argv.append(tag['cpppo_arg'])
 
         # Configure logging for this process - Cpppo is very verbose, so we need to set the level to WARNING
         cpppo.log_cfg['level'] = cpppo_log_level
@@ -182,40 +278,52 @@ class EnipServer:
         class TaggedAttribute(device.Attribute):
             def __init__(self, name, type_cls, default=0, error=0, mask=0):
                 super().__init__(name, type_cls, default, error, mask)
-                self.enip_tag = tags_dict.get(name)
-                self.write_history = []
+
+            @property
+            def enip_tag(self):
+                return tags_dict.get(self.name)
+
+            @property
+            def __current_value(self):
+                if not self.enip_tag:
+                    return None
+                return self.enip_tag.get("current_value")
 
             def __setitem__(self, key, value):
                 """Override to catch write operations"""
-                if self.enip_tag:
-                    # print(f"Caught write to {self.name}: {value}")
-                    self.enip_tag.current_value = value
-                    self.write_history.append(value)
-                super().__setitem__(key, value)
+                try:
+                    if isinstance(value, list):
+                        value_to_write = value[0]
+                    if self.enip_tag and value_to_write != self.__current_value:
+                        self.enip_tag["current_value"] = value_to_write
+                        write_operations.append({"tag": self.name, "value": value_to_write, "timestamp": time.time()})
+                        write_received.set()
+                except Exception as e:
+                    print(f"Error setting item {key}: {e}")
+                    traceback.print_exc()
+                return super().__setitem__(key, value)
 
             def __getitem__(self, key):
                 """Override to catch read operations"""
-                # if self.enip_tag:
-                    # print(f"Caught read from {self.name}: {self.enip_tag.current_value}")
-                return super().__getitem__(key)
+                try:
+                    if self.enip_tag:
+                        read_operations.append({"tag": self.name, "timestamp": time.time()})
+                        return [self.__current_value]
+                except Exception as e:
+                    print(f"Error getting item {key}: {e}")
+                    traceback.print_exc()
+                result = super().__getitem__(key)
+                return result
 
         def idle_init():
             """Initialize the tags with their current values after the server starts"""
             if idle_init.complete:
                 return
             idle_init.complete = True
-            
-            # Set initial values for all tags
-            for name, tag in tags_dict.items():
-                if name in tags_dict and hasattr(tags_dict[name], 'attribute'):
-                    try:
-                        tags_dict[name].attribute[0] = tag.current_value
-                        print(f"Initialized {name} with value: {tag.current_value}")
-                    except Exception as e:
-                        print(f"Failed to initialize {name}: {e}")
 
         idle_init.complete = False
 
+        print(f"Starting cpppo server with args: {argv}")
         return enip_main( argv=argv, attribute_class=TaggedAttribute, idle_service=idle_init, **kwargs )
 
 
@@ -224,17 +332,17 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
     tags = [
-        EnipTag("Temperature", "REAL[1]", 25.0),
-        EnipTag("Pressure", "REAL[1]", 101.3),
-        EnipTag("Status", "BOOL[1]", True),
-        EnipTag("FlowRate", "REAL[1]", 10.0),
-        EnipTag("Setpoint", "REAL[1]", 50.0),
-        EnipTag("Alarm", "BOOL[1]", False),
+        EnipTag("Temperature", 25.0),
+        EnipTag("Pressure", 101.3),
+        EnipTag("Status", True),
+        EnipTag("FlowRate", 10.0),
+        EnipTag("Setpoint", 50.0),
+        EnipTag("Alarm", False),
     ]
-    server = EnipServer(tags)
+    server = EnipServer(port=44818, tags=tags)
 
     extra_tags = [
-        EnipTag("ExtraTag", "REAL[1]", 10.0),
+        EnipTag("ExtraTag", 10.0),
     ]
 
     start_time = time.time()
@@ -244,15 +352,15 @@ if __name__ == "__main__":
         ## Generate a random value for each tag
         values = {}
         for tag in tags:
-            if tag.min_value is not None and tag.max_value is not None:
-                values[tag.name] = random.uniform(tag.min_value, tag.max_value)
-            else:
-                values[tag.name] = random.random()
-        logging.info(f"Writing values: {values}")
+            values[tag.name] = random.random()
+        logging.info(f"Updating values...")
         server.write_tags(values)
 
         # After 20 seconds, add the extra tags
-        if time.time() - start_time > 20:
+        if time.time() - start_time > 10:
             for t in extra_tags:
                 server.add_tag(t)
+
+            # Only do this once
+            extra_tags.clear()
             start_time = time.time()
