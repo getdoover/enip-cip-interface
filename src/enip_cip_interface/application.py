@@ -142,7 +142,7 @@ class EnipCipInterfaceApplication(Application):
             }
         # Compose a nested dictionary for as many more elements as there are
         result = {}
-        for i in range(1, len(s)):
+        for i in range(0, len(s)-1):
             result[s[i]] = {
                 s[i+1]: enip_tag_value
             }

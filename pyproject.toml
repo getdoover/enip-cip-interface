@@ -8,6 +8,7 @@ dependencies = [
     "pydoover>=0.4.11",
     "cpppo>=5.2.5",
     "transitions>=0.9.2",
+    "pylogix",
 ]
 
 [project.scripts]
