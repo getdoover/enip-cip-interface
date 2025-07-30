@@ -25,6 +25,14 @@
                     "type": "integer",
                     "description": "The port to listen on for the ENIP server",
                     "default": 44818
+                },
+                "tag_namespace_separator": {
+                    "title": "Tag Namespace Separator",
+                    "x-name": "tag_namespace_separator",
+                    "x-hidden": false,
+                    "type": "string",
+                    "description": "The separator to use between tag namespaces",
+                    "default": "__"
                 }
             },
             "additionalElements": true,

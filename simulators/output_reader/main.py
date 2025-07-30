@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.INFO)
 # All tags from the EtherNet/IP server configuration
 ALL_TAGS = [
     # Process variables
-    "sim_generator.temperature",
-    "sim_generator.pressure",
+    "sim_generator__temperature",
+    "sim_generator__pressure",
     "global_value",
     "global_status",
 ]

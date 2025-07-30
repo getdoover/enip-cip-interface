@@ -41,7 +41,7 @@ class EnipCipInterfaceApplication(Application):
         if tag_contents is None or len(tag_contents) == 0:
             logging.warning("No initial tag contents found, using default")
             tag_contents = {"TEST": True}
-        self.tags = EnipCipInterfaceApplication.generate_tags(tag_contents)
+        self.tags = self.generate_tags(tag_contents)
         logging.info(f"Generated initial tags: {self.tags}")
         self.enip_server = EnipServer(port=self.config.port.value, tags=self.tags)
 
@@ -72,7 +72,7 @@ class EnipCipInterfaceApplication(Application):
                 writes = self.enip_server.pop_write_operations()
                 logging.debug(f"Forwarding ENIP writes to channel: {writes}")
                 for w in writes:
-                    msg = EnipCipInterfaceApplication.to_channel_message(w.tag_name, w.value)
+                    msg = self.to_channel_message(w.tag_name, w.value)
                     logging.debug(f"Publishing to channel: {msg}")
                     await self.device_agent.publish_to_channel_async(
                         "tag_values",
@@ -113,7 +113,7 @@ class EnipCipInterfaceApplication(Application):
             logging.warning("ENIP server not initialized, skipping tag update")
             return
         logging.debug(f"Channel update from channel {channel_name}: {channel_values}")
-        self.tags = EnipCipInterfaceApplication.generate_tags(channel_values)
+        self.tags = self.generate_tags(channel_values)
         logging.debug(f"Generated tags: {self.tags}")
         self.enip_server.set_tags(self.tags)
 
@@ -123,19 +123,19 @@ class EnipCipInterfaceApplication(Application):
 
         self.channel_update_ts = self.log_ts(self.channel_update_ts)
 
-    @staticmethod
-    def generate_tags(value: Any, prefixes: list[str] = []):
+    def generate_tags(self, value: Any, prefixes: list[str] = []):
         tags = []
         if isinstance(value, dict):
             for k, v in value.items():
-                tags.extend(EnipCipInterfaceApplication.generate_tags(v, prefixes + [k]))
+                tags.extend(self.generate_tags(v, prefixes + [k]))
         else:
-            tags.append(EnipTag(f"{'.'.join(prefixes)}", current_value=value))
+            delimiter = self.config.tag_namespace_separator.value
+            tags.append(EnipTag(f"{delimiter.join(prefixes)}", current_value=value))
         return tags
 
-    @staticmethod
-    def to_channel_message(enip_tag_name: str, enip_tag_value: Any):
-        s = enip_tag_name.split(".")
+    def to_channel_message(self, enip_tag_name: str, enip_tag_value: Any):
+        delimiter = self.config.tag_namespace_separator.value
+        s = enip_tag_name.split(delimiter)
         if len(s) == 1:
             return {
                 enip_tag_name: enip_tag_value

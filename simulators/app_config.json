@@ -1,3 +1,4 @@
 {
-    "port": 44818
+    "port": 44818,
+    "tag_namespace_separator": "__"
 }
