@@ -3,12 +3,13 @@ import time
 import asyncio
 import multiprocessing
 import traceback
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from pydoover.docker import Application
 
 from .app_config import EnipCipInterfaceConfig
 from .enip_server import EnipServer, EnipTag, EnipReadOp, EnipWriteOp
+from .plc_sync import PlcSyncTask
 
 log = logging.getLogger()
 
@@ -26,6 +27,8 @@ class EnipCipInterfaceApplication(Application):
 
         self.enip_server = None
         self._write_task = None
+
+        self._plc_sync_tasks: List[PlcSyncTask] = []
 
     async def setup(self):
         """Initialize the EtherNet/IP server"""
@@ -47,6 +50,11 @@ class EnipCipInterfaceApplication(Application):
 
         self._write_task = asyncio.create_task(self.enip_write_task())
 
+        for plc_config in self.config.plcs.elements:
+            new_plc = PlcSyncTask(self, plc_config)
+            await new_plc.start()
+            self._plc_sync_tasks.append(new_plc)
+
         self.on_tag_update("tag_values", tag_contents)
 
     async def main_loop(self):
@@ -58,8 +66,8 @@ class EnipCipInterfaceApplication(Application):
         read_rate = self.get_loop_rate([op.timestamp for op in self.enip_server.pop_read_operations()])
         write_rate = self.get_loop_rate(self.enip_write_ts)
         logging.info(f"Channel update rate: {channel_rate:.2f} Hz")
-        logging.info(f"ENIP Read rate: {read_rate:.2f} Hz")
-        logging.info(f"ENIP Write rate: {write_rate:.2f} Hz")
+        logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
+        logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
 
         await asyncio.sleep(10)
 
@@ -147,3 +155,23 @@ class EnipCipInterfaceApplication(Application):
                 s[i+1]: enip_tag_value
             }
         return result
+    
+    def retreive_doover_tag_value(self, delimited_tag_name: str):
+        try:
+            delimiter = self.config.tag_namespace_separator.value
+            s = delimited_tag_name.split(delimiter)
+            if len(s) < 1:
+                raise ValueError(f"Invalid tag name: {delimited_tag_name}")
+            if len(s) == 1:
+                return self.get_global_tag(s[0])
+            if len(s) >= 2:
+                result = self.get_tag(s[1], app_key=s[0])
+                for i in range(2, len(s)):
+                    if isinstance(result, dict):
+                        result = result[s[i]]
+                    else:
+                        raise ValueError(f"Tag {delimited_tag_name} not found")
+            return result
+        except Exception as e:
+            logging.exception(f"Error retrieving tag value: {e}", exc_info=True)
+            return None

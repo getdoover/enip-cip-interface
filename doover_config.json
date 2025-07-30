@@ -23,7 +23,7 @@
                     "x-name": "port",
                     "x-hidden": false,
                     "type": "integer",
-                    "description": "The port to listen on for the ENIP server",
+                    "description": "The port to host an ENIP server on",
                     "default": 44818
                 },
                 "tag_namespace_separator": {
@@ -33,10 +33,132 @@
                     "type": "string",
                     "description": "The separator to use between tag namespaces",
                     "default": "__"
+                },
+                "plcs": {
+                    "title": "PLCs",
+                    "x-name": "plcs",
+                    "x-hidden": false,
+                    "type": "array",
+                    "description": "The PLCs to connect to",
+                    "items": {
+                        "title": "PLC",
+                        "x-name": "plc",
+                        "x-hidden": false,
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "title": "Name",
+                                "x-name": "name",
+                                "x-hidden": false,
+                                "type": "string",
+                                "description": "The name of the PLC. This is used to identify the PLC in the Doover config.",
+                                "default": null
+                            },
+                            "address": {
+                                "title": "Address",
+                                "x-name": "address",
+                                "x-hidden": false,
+                                "type": "string",
+                                "description": "IP address or domain name of the PLC"
+                            },
+                            "port": {
+                                "title": "Port",
+                                "x-name": "port",
+                                "x-hidden": false,
+                                "type": "integer",
+                                "description": "Port to connect on the PLC",
+                                "default": 44818
+                            },
+                            "micro800": {
+                                "title": "Micro800",
+                                "x-name": "micro800",
+                                "x-hidden": false,
+                                "type": "boolean",
+                                "description": "Whether the PLC is a Micro800",
+                                "default": false
+                            },
+                            "username": {
+                                "title": "Username",
+                                "x-name": "username",
+                                "x-hidden": false,
+                                "type": "string",
+                                "description": "Username to connect to the PLC",
+                                "default": null
+                            },
+                            "password": {
+                                "title": "Password",
+                                "x-name": "password",
+                                "x-hidden": false,
+                                "type": "string",
+                                "description": "Password to connect to the PLC",
+                                "default": null
+                            },
+                            "sync_period": {
+                                "title": "Sync Period",
+                                "x-name": "sync_period",
+                                "x-hidden": false,
+                                "type": "number",
+                                "description": "The period in seconds to sync the PLC",
+                                "default": 1.0
+                            },
+                            "tag_mappings": {
+                                "title": "Tag Mappings",
+                                "x-name": "tag_mappings",
+                                "x-hidden": false,
+                                "type": "array",
+                                "items": {
+                                    "title": "PLC Tag Mapping",
+                                    "x-name": "plc_tag_mapping",
+                                    "x-hidden": false,
+                                    "type": "object",
+                                    "properties": {
+                                        "mode": {
+                                            "enum": [
+                                                "Read from PLC",
+                                                "Write to PLC"
+                                            ],
+                                            "title": "Mode",
+                                            "x-name": "mode",
+                                            "x-hidden": false,
+                                            "type": "string",
+                                            "description": "The mode to use for the PLC tag mapping",
+                                            "default": "Read from PLC"
+                                        },
+                                        "doover_tag": {
+                                            "title": "Doover Tag",
+                                            "x-name": "doover_tag",
+                                            "x-hidden": false,
+                                            "type": "string",
+                                            "description": "The tag to map to the PLC. Namespaces are separated by the tag namespace separator."
+                                        },
+                                        "plc_tag": {
+                                            "title": "PLC Tag",
+                                            "x-name": "plc_tag",
+                                            "x-hidden": false,
+                                            "type": "string",
+                                            "description": "The tag to map to the PLC"
+                                        }
+                                    },
+                                    "additionalElements": true,
+                                    "required": [
+                                        "doover_tag",
+                                        "plc_tag"
+                                    ]
+                                }
+                            }
+                        },
+                        "additionalElements": true,
+                        "required": [
+                            "address",
+                            "tag_mappings"
+                        ]
+                    }
                 }
             },
             "additionalElements": true,
-            "required": []
+            "required": [
+                "plcs"
+            ]
         },
         "owner_org": "36a22e32-ab81-4a39-b400-869d532a052d",
         "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e",

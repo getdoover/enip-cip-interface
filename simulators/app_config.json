@@ -1,4 +1,32 @@
 {
     "port": 44818,
-    "tag_namespace_separator": "__"
+    "tag_namespace_separator": "__",
+    "plcs": [
+        {
+            "name": "PLC1",
+            "address": "127.0.0.1",
+            "port": 44818,
+            "micro800": false,
+            "sync_period": 1.0,
+            "username": null,
+            "password": null,
+            "tag_mappings": [
+                {
+                    "mode": "Read from PLC",
+                    "plc_tag": "sim_generator__temperature",
+                    "doover_tag": "plc_1__temperature"
+                },
+                {
+                    "mode": "Read from PLC",
+                    "plc_tag": "sim_generator__temperature",
+                    "doover_tag": "global_temperature"
+                },
+                {
+                    "mode": "Write to PLC",
+                    "doover_tag": "sim_generator__pressure",
+                    "plc_tag": "plc_1__pressure"
+                }
+            ]
+        }
+    ]
 }
