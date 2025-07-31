@@ -145,9 +145,10 @@ class EnipCipInterfaceApplication(Application):
         delimiter = self.config.tag_namespace_separator.value
         s = enip_tag_name.split(delimiter)
         if len(s) == 1:
-            return {
+            res = {
                 enip_tag_name: enip_tag_value
             }
+            return res
         # Compose a nested dictionary for as many more elements as there are
         result = {}
         for i in range(0, len(s)-1):

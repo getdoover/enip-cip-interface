@@ -43,10 +43,11 @@ class PlcSyncTask:
                     comm.IPAddress = self.plc_config.address.value
                     comm.Port = self.plc_config.port.value
                     comm.Micro800 = self.plc_config.micro800.value
-                    if self.plc_config.username.value is not None:
+                    try:
                         comm.UserTag = self.plc_config.username.value
-                    if self.plc_config.password.value is not None:
                         comm.PasswordTag = self.plc_config.password.value
+                    except Exception as e:
+                        logging.warning(f"Failed to set UserTag/PasswordTag for {self.plc_name}: {e}")
 
                     while True:
                         start_time = time.time()
@@ -64,24 +65,38 @@ class PlcSyncTask:
 
 
     async def _sync_from_plc(self, comm: PLC):
+        
 
         logging.debug(f"Syncing from PLC {self.plc_name}...")
 
         updates_to_publish: Dict[str, Any] = {}
 
+        updates = []
+
         for tag_mapping in self.plc_config.tag_mappings.elements:
             if tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
+                print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
+                    print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
-                    updates_to_publish.update(channel_msg)
+                    updates.append(channel_msg)
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
+                print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
                 if result is not None:
-                    comm.Write(tag_mapping.plc_tag.value, result)
+                    t = comm.Write(tag_mapping.plc_tag.value, result)
+                    print(t.TagName, t.Value, t.Status)
 
-        logging.debug(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
+        for update in updates:
+            key = next(iter(update))
+            if key in updates_to_publish:
+                updates_to_publish[key].update(update[key])
+            else:
+                updates_to_publish[key] = update[key]
+
+        print(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
         if updates_to_publish:
             await self.app.device_agent.publish_to_channel_async(
                 "tag_values",
