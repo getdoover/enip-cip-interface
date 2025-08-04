@@ -14,6 +14,7 @@ class PlcSyncTask:
         self.plc_config = plc_config
 
         self._task = None
+        self.last_read_values = {}
 
     @property
     def plc_name(self):
@@ -76,11 +77,24 @@ class PlcSyncTask:
         for tag_mapping in self.plc_config.tag_mappings.elements:
             if tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
+                tag_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
                 print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
+                    last_plc_read_val = self.last_read_values.get(tag_mapping.plc_tag.value, None)
+                    if tag_value is not None and last_plc_read_val is not None:
+                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(result.Value,3):
+                            print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
+                            t = comm.Write(tag_mapping.plc_tag.value, result)
+                            # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
+                            continue
+
                     print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     updates.append(channel_msg)
+                    # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
+                    # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
+                    # updates.append(channel_msg)
+                    self.last_read_values[tag_mapping.plc_tag.value] = result.Value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
