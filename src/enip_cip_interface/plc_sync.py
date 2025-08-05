@@ -84,7 +84,7 @@ class PlcSyncTask:
                     if tag_value is not None and last_plc_read_val is not None:
                         if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(result.Value,3):
                             print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
-                            t = comm.Write(tag_mapping.plc_tag.value, result)
+                            t = comm.Write(tag_mapping.plc_tag.value, tag_value)
                             # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
                             continue
 

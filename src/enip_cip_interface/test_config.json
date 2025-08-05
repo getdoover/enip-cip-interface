@@ -1,0 +1,224 @@
+{
+  "plcs": [
+    {
+      "name": "test-plc",
+      "port": 44818,
+      "address": "10.0.0.2",
+      "micro800": false,
+      "sync_period": 1,
+      "tag_mappings": [
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpA_CorrectionFactor",
+          "doover_tag": "CSPumpA.CorrectionFactor"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpA_FlowRate",
+          "doover_tag": "CSPumpA.FlowRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpA_LastCal",
+          "doover_tag": "CSPumpA.LastCal"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpA_Pressure",
+          "doover_tag": "CSPumpA.Pressure"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpA_Pumping",
+          "doover_tag": "CSPumpA.Pumping"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpA_State",
+          "doover_tag": "CSPumpA.State"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpA_TargetRate",
+          "doover_tag": "CSPumpA.TargetRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpA_Total",
+          "doover_tag": "CSPumpA.Total"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpB_CorrectionFactor",
+          "doover_tag": "CSPumpB.CorrectionFactor"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpB_FlowRate",
+          "doover_tag": "CSPumpB.FlowRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpB_LastCal",
+          "doover_tag": "CSPumpB.LastCal"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpB_Pressure",
+          "doover_tag": "CSPumpB.Pressure"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpB_Pumping",
+          "doover_tag": "CSPumpB.Pumping"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpB_State",
+          "doover_tag": "CSPumpB.State"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_PumpB_TargetRate",
+          "doover_tag": "CSPumpB.TargetRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_PumpB_Total",
+          "doover_tag": "CSPumpB.Total"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_TankA_Level",
+          "doover_tag": "analog_level_sensor-2.level_filled_percentage"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_TankB_Level",
+          "doover_tag": "analog_level_sensor_92mw0.level_filled_percentage"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_ValveA_Open",
+          "doover_tag": "CSPumpA.ValveOpen"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_ValveB_Open",
+          "doover_tag": "CSPumpB.ValveOpen"
+        }
+      ]
+    },
+    {
+      "name": "plc-2",
+      "port": 44818,
+      "address": "10.0.0.8",
+      "micro800": false,
+      "sync_period": 1,
+      "tag_mappings": [
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2A_CorrectionFactor",
+          "doover_tag": "CSPump2A.CorrectionFactor"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2A_FlowRate",
+          "doover_tag": "CSPump2A.FlowRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2A_LastCal",
+          "doover_tag": "CSPump2A.LastCal"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2A_Pressure",
+          "doover_tag": "CSPump2A.Pressure"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2A_Pumping",
+          "doover_tag": "CSPump2A.Pumping"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2A_State",
+          "doover_tag": "CSPump2A.State"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2A_TargetRate",
+          "doover_tag": "CSPump2A.TargetRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2A_Total",
+          "doover_tag": "CSPump2A.Total"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2B_CorrectionFactor",
+          "doover_tag": "CSPump2B.CorrectionFactor"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2B_FlowRate",
+          "doover_tag": "CSPump2B.FlowRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2B_LastCal",
+          "doover_tag": "CSPump2B.LastCal"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2B_Pressure",
+          "doover_tag": "CSPump2B.Pressure"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2B_Pumping",
+          "doover_tag": "CSPump2B.Pumping"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2B_State",
+          "doover_tag": "CSPump2B.State"
+        },
+        {
+          "mode": "Read from PLC",
+          "plc_tag": "CS_Pump2B_TargetRate",
+          "doover_tag": "CSPump2B.TargetRate"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_Pump2B_Total",
+          "doover_tag": "CSPump2B.Total"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_TankA_Level",
+          "doover_tag": "analog_level_sensor-2.level_filled_percentage"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_TankB_Level",
+          "doover_tag": "analog_level_sensor_92mw0.level_filled_percentage"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_ValveA_Open",
+          "doover_tag": "CSPumpA.ValveOpen"
+        },
+        {
+          "mode": "Write to PLC",
+          "plc_tag": "CS_ValveB_Open",
+          "doover_tag": "CSPumpB.ValveOpen"
+        }
+      ]
+    }
+  ],
+  "port": 44818,
+  "tag_namespace_separator": "."
+}
