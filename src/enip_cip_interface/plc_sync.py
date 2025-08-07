@@ -15,8 +15,9 @@ class PlcSyncTask:
 
         self._task = None
         self.last_read_values = {}
-        self.dda_commands = {}
-        self.last_writes = []
+        self.last_tag_value = {}
+        self.dda_changes = []
+        self.enip_changes = []
 
     @property
     def plc_name(self):
@@ -83,39 +84,79 @@ class PlcSyncTask:
                 print("retrieving tag value:", tag_value, "from tag:", tag_mapping.doover_tag.value)
                 print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
-                    last_dda_cmd = self.dda_commands.get(tag_mapping.plc_tag.value, None)
+                    last_tag_val = self.last_tag_value.get(tag_mapping.plc_tag.value, None)
                     last_plc_read_val = self.last_read_values.get(tag_mapping.plc_tag.value, None)
+                    tag_name = tag_mapping.plc_tag.value
                         
-                    if tag_value is not None and last_plc_read_val is not None and last_dda_cmd is not None:
-                        if round(result.Value,3)!=last_plc_read_val and tag_mapping.plc_tag.value not in self.last_writes:
-                            self.last_writes.append(tag_mapping.plc_tag.value)
+                    if tag_value is not None and last_plc_read_val is not None and last_tag_val is not None:
+                        
+                        self.dda_changes = []
+                        self.enip_changes = []
+
+                        # Check for new changes iff the their are not current changes
+                        if tag_name not in self.dda_changes and tag_name not in self.enip_changes:
+                            # enip change - change from PLC
+                            if round(tag_value, 3)==round(last_tag_val)==round(last_plc_read_val)!=round(result.Value):
+                                self.enip_changes.append(tag_name)
+                            # DDA Change - change from App code or Doover user
+                            elif round(last_plc_read_val)==round(result.Value)==round(last_tag_val)!=round(tag_value, 3):
+                                self.dda_changes.append(tag_name)
+                        
+                        else: #there is a change active
+                            #check the all values are equal - change successful
+                            if round(tag_value, 3)==round(last_tag_val)==round(last_plc_read_val)==round(result.Value):
+                                #if state settles remove tag name from change lists
+                                if tag_name in self.dda_changes:
+                                    self.dda_changes.remove(tag_name)
+                                    # print(f"Removed from DDA changes: {tag_name}")
+                                if tag_name in self.enip_changes:
+                                    self.enip_changes.remove(tag_name)
                             
-                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3) and tag_mapping.plc_tag.value not in self.last_writes:
-                            print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
-                            t = comm.Write(tag_mapping.plc_tag.value, tag_value)
-                            # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
-                            continue
+                            # Change is active but not successful       
+                            elif tag_name in self.dda_changes:
+                                # there has been a dda change, write to PLC:
+                                print("active DDA change, writing to PLC")
+                                t = comm.Write(tag_mapping.plc_tag.value, tag_value)
+                                print("Active DDA Change, writing: ", t.TagName, t.Value, "Success: ", t.Status)
+
+                            elif tag_name in self.enip_changes:
+                                # there has been an enip change, write to DDA:
+                                print("active enip change, writing to Doover tag")
+                                print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
+                                channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
+                                updates.append(channel_msg)
                         
-                        if (tag_value == last_dda_cmd == result.Value == last_plc_read_val):
-                            if tag_mapping.plc_tag.value in self.last_writes:
-                                self.last_writes.remove(tag_mapping.plc_tag.value)
-                                print('successfully removed from last_writes')
-                            continue
+                        # if round(result.Value,3)!=last_plc_read_val and tag_mapping.plc_tag.value not in self.last_writes:
+                        #     self.last_writes.append(tag_mapping.plc_tag.value)
+            
+                        # if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3) and tag_mapping.plc_tag.value not in self.last_writes:
+                        #     print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
+                        #     t = comm.Write(tag_mapping.plc_tag.value, tag_value)
+                        #     # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
+                        #     continue
+                        
+                        # if (tag_value == last_dda_cmd == result.Value == last_plc_read_val):
+                        #     if tag_mapping.plc_tag.value in self.last_writes:
+                        #         self.last_writes.remove(tag_mapping.plc_tag.value)
+                        #         print('successfully removed from last_writes')
+                        #     continue
+                        
+                        # if tag_name in self.
                             
                             # print(f"Skipping write to PLC {tag_mapping.plc_tag.value} as value is unchanged: {result.Value}")
                             # continue
 
-                    print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
+                    # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     updates.append(channel_msg)
                     # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     # updates.append(channel_msg)
-                    if round(result.Value,3)!=last_plc_read_val:
-                        self.last_writes.append(tag_mapping.plc_tag.value)
+                    # if round(result.Value,3)!=last_plc_read_val:
+                    #     self.last_writes.append(tag_mapping.plc_tag.value)
                         
                     self.last_read_values[tag_mapping.plc_tag.value] = result.Value
-                    self.dda_commands[tag_mapping.plc_tag.value] = result.Value
+                    self.last_tag_value[tag_mapping.plc_tag.value] = tag_value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
