@@ -15,6 +15,7 @@ class PlcSyncTask:
 
         self._task = None
         self.last_read_values = {}
+        self.dda_commands = {}
 
     @property
     def plc_name(self):
@@ -80,9 +81,10 @@ class PlcSyncTask:
                 tag_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
                 print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
+                    last_dda_cmd = self.dda_commands.get(tag_mapping.plc_tag.value, None)
                     last_plc_read_val = self.last_read_values.get(tag_mapping.plc_tag.value, None)
-                    if tag_value is not None and last_plc_read_val is not None:
-                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(result.Value,3):
+                    if tag_value is not None and last_plc_read_val is not None and last_dda_cmd is not None:
+                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3):
                             print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
                             t = comm.Write(tag_mapping.plc_tag.value, tag_value)
                             # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
@@ -95,6 +97,7 @@ class PlcSyncTask:
                     # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     # updates.append(channel_msg)
                     self.last_read_values[tag_mapping.plc_tag.value] = result.Value
+                    self.dda_commands[tag_mapping.plc_tag.value] = result.Value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
