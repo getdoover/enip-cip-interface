@@ -95,9 +95,12 @@ class PlcSyncTask:
                             # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
                             continue
                         
-                        if (tag_value == last_dda_cmd == result.Value == last_plc_read_val) and tag_mapping.plc_tag.value in self.last_writes:
-                            self.last_writes.remove(tag_mapping.plc_tag.value)
-                            print('successfully removed from last_writes')
+                        if (tag_value == last_dda_cmd == result.Value == last_plc_read_val):
+                            if tag_mapping.plc_tag.value in self.last_writes:
+                                self.last_writes.remove(tag_mapping.plc_tag.value)
+                                print('successfully removed from last_writes')
+                            continue
+                            
                             # print(f"Skipping write to PLC {tag_mapping.plc_tag.value} as value is unchanged: {result.Value}")
                             # continue
 
