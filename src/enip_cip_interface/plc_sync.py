@@ -16,6 +16,7 @@ class PlcSyncTask:
         self._task = None
         self.last_read_values = {}
         self.dda_commands = {}
+        self.last_writes = []
 
     @property
     def plc_name(self):
@@ -83,12 +84,21 @@ class PlcSyncTask:
                 if result.Status == "Success" and result.Value is not None:
                     last_dda_cmd = self.dda_commands.get(tag_mapping.plc_tag.value, None)
                     last_plc_read_val = self.last_read_values.get(tag_mapping.plc_tag.value, None)
+                        
                     if tag_value is not None and last_plc_read_val is not None and last_dda_cmd is not None:
-                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3):
+                        if round(result.Value,3)!=last_plc_read_val and tag_mapping.plc_tag.value not in self.last_writes:
+                            self.last_writes.append(tag_mapping.plc_tag.value)
+                            
+                        if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3) and tag_mapping.plc_tag.value not in self.last_writes:
                             print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
                             t = comm.Write(tag_mapping.plc_tag.value, tag_value)
                             # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
                             continue
+                        
+                        if tag_value == last_dda_cmd == result.Value == last_plc_read_val:
+                            self.last_writes.remove(tag_mapping.plc_tag.value)
+                            # print(f"Skipping write to PLC {tag_mapping.plc_tag.value} as value is unchanged: {result.Value}")
+                            # continue
 
                     print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
@@ -96,8 +106,11 @@ class PlcSyncTask:
                     # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     # updates.append(channel_msg)
+                    if round(result.Value,3)!=last_plc_read_val:
+                        self.last_writes.append(tag_mapping.plc_tag.value)
+                        
                     self.last_read_values[tag_mapping.plc_tag.value] = result.Value
-                    # self.dda_commands[tag_mapping.plc_tag.value] = result.Value
+                    self.dda_commands[tag_mapping.plc_tag.value] = result.Value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
