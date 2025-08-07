@@ -249,7 +249,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cpppo", specifier = ">=5.2.5" },
-    { name = "pydoover", specifier = ">=0.4.11" },
+    { name = "pydoover", specifier = ">=0.4.13" },
     { name = "pylogix" },
     { name = "transitions", specifier = ">=0.9.2" },
 ]
@@ -596,15 +596,15 @@ wheels = [
 
 [[package]]
 name = "pydoover"
-version = "0.4.11"
+version = "0.4.13"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/23/c3/5f700a472174432817324dd365ea43d4fffdbba91c2ca1f1c3f1d42b2865/pydoover-0.4.11.tar.gz", hash = "sha256:e381ae26fb7c89293e134969767d6edcbfd9f0dd30946e92b425b1e062597a0d", size = 198323, upload-time = "2025-07-16T06:09:13.035Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f7/ff/5a23850d0604bdd9d1219f50caa7a488acf72aedc754cfc40bfce4a55be3/pydoover-0.4.13.tar.gz", hash = "sha256:29bc2f263536b0e279ab5d3b7dc66aadfbe26dd5a0cf77629e46fb38f4e50102", size = 200596, upload-time = "2025-07-30T03:18:19.573Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c7/a4/3050ffbcf529071a2401177d0469bf442408596ac391ddf96c56262de0e4/pydoover-0.4.11-py3-none-any.whl", hash = "sha256:ef3b85ad4b3753cc1a72bb29374d7cd87f051da453a5470a1e0fc46399d8b1fb", size = 143031, upload-time = "2025-07-16T06:09:11.755Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/54/031b0ceeae6312abe5539eeef08f428291ec5a49c6c6899c0d1a78309b7e/pydoover-0.4.13-py3-none-any.whl", hash = "sha256:4945bba3e97f55dfdedd7fb0e7a1cc24629ad1b6cf44528f9c3a81a0c9464204", size = 145139, upload-time = "2025-07-30T03:18:18.253Z" },
 ]
 
 [[package]]
