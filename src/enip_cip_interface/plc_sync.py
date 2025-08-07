@@ -80,6 +80,7 @@ class PlcSyncTask:
             if tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
                 tag_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
+                print("retrieving tag value:", tag_value, "from tag:", tag_mapping.doover_tag.value)
                 print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
                     last_dda_cmd = self.dda_commands.get(tag_mapping.plc_tag.value, None)
