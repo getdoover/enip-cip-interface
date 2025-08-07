@@ -5,6 +5,8 @@ from pydoover import config
 class EnipTagSyncMode(config.Enum):
     FROM_PLC = "Read from PLC"
     TO_PLC = "Write to PLC"
+    SYNC_PLC_PREFERRED = "Sync (PLC Preferred)"
+    SYNC_DOOVER_PREFERRED = "Sync (Doover Preferred)"
 
 class EnipCipInterfaceConfig(config.Schema):
 
@@ -23,6 +25,8 @@ class EnipCipInterfaceConfig(config.Schema):
                 choices=[
                     EnipTagSyncMode.FROM_PLC,
                     EnipTagSyncMode.TO_PLC,
+                    EnipTagSyncMode.SYNC_PLC_PREFERRED,
+                    EnipTagSyncMode.SYNC_DOOVER_PREFERRED,
                 ]
             ),
             config.String("Doover Tag", description="The tag to map to the PLC. Namespaces are separated by the tag namespace separator."),
@@ -38,6 +42,7 @@ class EnipCipInterfaceConfig(config.Schema):
             config.String("Username", default=None, description="Username to connect to the PLC"),
             config.String("Password", default=None, description="Password to connect to the PLC"),
             config.Number("Sync Period", default=1.0, description="The period in seconds to sync the PLC"),
+            config.Number("Timeout", default=0.2, description="The timeout in seconds to wait for a response from the PLC"),
             config.Array("Tag Mappings", element=plc_tag_mapping),
         )
         return plc_elem

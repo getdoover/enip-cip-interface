@@ -19,6 +19,8 @@ class PlcSyncTask:
         self.dda_changes = []
         self.enip_changes = []
 
+        self.last_sync_agreed_values = {}
+
     @property
     def plc_name(self):
         name = self.plc_config.name.value or self.plc_config.address.value
@@ -47,6 +49,7 @@ class PlcSyncTask:
                     comm.IPAddress = self.plc_config.address.value
                     comm.Port = self.plc_config.port.value
                     comm.Micro800 = self.plc_config.micro800.value
+                    comm.SocketTimeout = self.plc_config.timeout.value
                     try:
                         comm.UserTag = self.plc_config.username.value
                         comm.PasswordTag = self.plc_config.password.value
@@ -67,103 +70,65 @@ class PlcSyncTask:
                 logging.exception(f"Error syncing PLC: {e}", exc_info=True)
                 await asyncio.sleep(1)
 
+    ## Sync Helpers
+    def get_sync_values(self, tag_mapping: Any, comm: PLC):
+        plc_value = comm.Read(tag_mapping.plc_tag.value)
+        doover_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
+        last_agreed = self.last_sync_agreed_values.get(tag_mapping.plc_tag.value, None)
+        return plc_value, doover_value, last_agreed
+    
+    def propogate_to_plc(self, tag_mapping: Any, tag_value: Any, comm: PLC):
+        comm.Write(tag_mapping.plc_tag.value, tag_value)
+        self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
+    
+    def propogate_to_doover(self, tag_mapping: Any, tag_value: Any):
+        self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
+        channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, tag_value)
+        return channel_msg
 
+    def has_changed(self, value1: Any, value2: Any, float_tolerance: float = 0.01):
+        if isinstance(value1, float) and isinstance(value2, float):
+            return abs(value1 - value2) > float_tolerance
+        return value1 != value2
+
+
+    ## Main Sync Function
     async def _sync_from_plc(self, comm: PLC):
-        
-
         logging.debug(f"Syncing from PLC {self.plc_name}...")
-
-        updates_to_publish: Dict[str, Any] = {}
 
         updates = []
 
         for tag_mapping in self.plc_config.tag_mappings.elements:
-            if tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
+
+            if tag_mapping.mode.value == EnipTagSyncMode.SYNC_PLC_PREFERRED:
+                plc_value, doover_value, last_agreed = self.get_sync_values(tag_mapping, comm)
+                if plc_value is not None:
+                    if last_agreed is None or self.has_changed(last_agreed, plc_value):
+                        updates.append(self.propogate_to_doover(tag_mapping, plc_value))
+                    elif self.has_changed(last_agreed, doover_value):
+                        self.propogate_to_plc(tag_mapping, doover_value, comm)
+
+            elif tag_mapping.mode.value == EnipTagSyncMode.SYNC_DOOVER_PREFERRED:
+                plc_value, doover_value, last_agreed = self.get_sync_values(tag_mapping, comm)
+                if plc_value is not None:
+                    if last_agreed is None or self.has_changed(last_agreed, doover_value):
+                        self.propogate_to_plc(tag_mapping, doover_value, comm)
+                    elif self.has_changed(last_agreed, plc_value):
+                        self.propogate_to_doover(tag_mapping, plc_value)
+
+            elif tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
-                tag_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
-                print("retrieving tag value:", tag_value, "from tag:", tag_mapping.doover_tag.value)
-                print(result.TagName, result.Value, result.Status)
                 if result.Status == "Success" and result.Value is not None:
-                    last_tag_val = self.last_tag_value.get(tag_mapping.plc_tag.value, None)
-                    last_plc_read_val = self.last_read_values.get(tag_mapping.plc_tag.value, None)
-                    tag_name = tag_mapping.plc_tag.value
-                        
-                    if tag_value is not None and last_plc_read_val is not None and last_tag_val is not None:
-                        
-                        self.dda_changes = []
-                        self.enip_changes = []
-
-                        # Check for new changes iff the their are not current changes
-                        if tag_name not in self.dda_changes and tag_name not in self.enip_changes:
-                            # enip change - change from PLC
-                            if round(tag_value, 3)==round(last_tag_val)==round(last_plc_read_val)!=round(result.Value):
-                                self.enip_changes.append(tag_name)
-                            # DDA Change - change from App code or Doover user
-                            elif round(last_plc_read_val)==round(result.Value)==round(last_tag_val)!=round(tag_value, 3):
-                                self.dda_changes.append(tag_name)
-                        
-                        else: #there is a change active
-                            #check the all values are equal - change successful
-                            if round(tag_value, 3)==round(last_tag_val)==round(last_plc_read_val)==round(result.Value):
-                                #if state settles remove tag name from change lists
-                                if tag_name in self.dda_changes:
-                                    self.dda_changes.remove(tag_name)
-                                    # print(f"Removed from DDA changes: {tag_name}")
-                                if tag_name in self.enip_changes:
-                                    self.enip_changes.remove(tag_name)
-                            
-                            # Change is active but not successful       
-                            elif tag_name in self.dda_changes:
-                                # there has been a dda change, write to PLC:
-                                print("active DDA change, writing to PLC")
-                                t = comm.Write(tag_mapping.plc_tag.value, tag_value)
-                                print("Active DDA Change, writing: ", t.TagName, t.Value, "Success: ", t.Status)
-
-                            elif tag_name in self.enip_changes:
-                                # there has been an enip change, write to DDA:
-                                print("active enip change, writing to Doover tag")
-                                print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
-                                channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
-                                updates.append(channel_msg)
-                        
-                        # if round(result.Value,3)!=last_plc_read_val and tag_mapping.plc_tag.value not in self.last_writes:
-                        #     self.last_writes.append(tag_mapping.plc_tag.value)
-            
-                        # if round(last_plc_read_val,3) == round(result.Value,3) and round(tag_value,3) != round(last_dda_cmd,3) and tag_mapping.plc_tag.value not in self.last_writes:
-                        #     print(f"A PLC read value was updated from the Doovit, writing to PLC {tag_mapping.plc_tag.value}: {tag_value}")
-                        #     t = comm.Write(tag_mapping.plc_tag.value, tag_value)
-                        #     # print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
-                        #     continue
-                        
-                        # if (tag_value == last_dda_cmd == result.Value == last_plc_read_val):
-                        #     if tag_mapping.plc_tag.value in self.last_writes:
-                        #         self.last_writes.remove(tag_mapping.plc_tag.value)
-                        #         print('successfully removed from last_writes')
-                        #     continue
-                        
-                        # if tag_name in self.
-                            
-                            # print(f"Skipping write to PLC {tag_mapping.plc_tag.value} as value is unchanged: {result.Value}")
-                            # continue
-
-                    # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
                     channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     updates.append(channel_msg)
-                    # print(f"Publishing to channel: {tag_mapping.doover_tag.value} -> {result.Value}")
-                    # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
-                    # updates.append(channel_msg)
-                    # if round(result.Value,3)!=last_plc_read_val:
-                    #     self.last_writes.append(tag_mapping.plc_tag.value)
-                        
-                    self.last_read_values[tag_mapping.plc_tag.value] = result.Value
-                    self.last_tag_value[tag_mapping.plc_tag.value] = tag_value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
-                print(f"Writing to PLC {tag_mapping.plc_tag.value}: {result}")
                 if result is not None:
                     t = comm.Write(tag_mapping.plc_tag.value, result)
-                    print(t.TagName, t.Value, t.Status)
+
+
+        updates_to_publish: Dict[str, Any] = {}
 
         for update in updates:
             key = next(iter(update))
@@ -172,7 +137,7 @@ class PlcSyncTask:
             else:
                 updates_to_publish[key] = update[key]
 
-        print(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
+        logging.debug(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
         if updates_to_publish:
             await self.app.device_agent.publish_to_channel_async(
                 "tag_values",
