@@ -97,7 +97,7 @@ class PlcSyncTask:
                     # channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
                     # updates.append(channel_msg)
                     self.last_read_values[tag_mapping.plc_tag.value] = result.Value
-                    self.dda_commands[tag_mapping.plc_tag.value] = result.Value
+                    # self.dda_commands[tag_mapping.plc_tag.value] = result.Value
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
