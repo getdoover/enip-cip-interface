@@ -166,9 +166,11 @@ class PlcSyncTask:
 
         logging.debug(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
         if updates_to_publish:
+            logging.info(f"{self.plc_name} PLC TASK: Publishing updates to channel: {updates_to_publish}")
             await self.app.device_agent.publish_to_channel_async(
                 "tag_values",
                 updates_to_publish,
                 record_log=False,
                 max_age=None,
             )
+            logging.info(f"{self.plc_name} PLC TASK: Finished Publish")
