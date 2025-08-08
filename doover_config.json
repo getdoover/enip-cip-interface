@@ -101,6 +101,14 @@
                                 "description": "The period in seconds to sync the PLC",
                                 "default": 1.0
                             },
+                            "timeout": {
+                                "title": "Timeout",
+                                "x-name": "timeout",
+                                "x-hidden": false,
+                                "type": "number",
+                                "description": "The timeout in seconds to wait for a response from the PLC",
+                                "default": 0.2
+                            },
                             "tag_mappings": {
                                 "title": "Tag Mappings",
                                 "x-name": "tag_mappings",
@@ -115,7 +123,9 @@
                                         "mode": {
                                             "enum": [
                                                 "Read from PLC",
-                                                "Write to PLC"
+                                                "Write to PLC",
+                                                "Sync (PLC Preferred)",
+                                                "Sync (Doover Preferred)"
                                             ],
                                             "title": "Mode",
                                             "x-name": "mode",
