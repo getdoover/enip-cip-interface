@@ -37,7 +37,7 @@ class PlcSyncTask:
 
     @property
     def average_task_time(self):
-        if not self.task_run_times:
+        if not self.task_run_times or len(self.task_run_times) == 0:
             return 0
         return sum(self.task_run_times.values()) / len(self.task_run_times)
 
@@ -47,7 +47,10 @@ class PlcSyncTask:
             return 0
         timestamps = list(self.task_run_times.keys())
         timestamps.sort()
-        return len(timestamps) / (timestamps[-1] - timestamps[0])
+        dt = timestamps[-1] - timestamps[0]
+        if dt == 0:
+            return 0
+        return len(timestamps) / dt
 
     async def _run(self):
         sync_period_secs = self.plc_config.sync_period.value
@@ -127,9 +130,9 @@ class PlcSyncTask:
             if tag_mapping.mode.value == EnipTagSyncMode.SYNC_PLC_PREFERRED:
                 plc_value, doover_value, last_agreed = self.get_sync_values(tag_mapping, comm)
                 if plc_value is not None:
-                    if last_agreed is None or self.has_changed(last_agreed, plc_value):
+                    if last_agreed is None or self.has_changed(last_agreed, plc_value) or doover_value is None:
                         updates.append(self.propogate_to_doover(tag_mapping, plc_value))
-                    elif self.has_changed(last_agreed, doover_value):
+                    elif doover_value is not None and self.has_changed(last_agreed, doover_value):
                         self.propogate_to_plc(tag_mapping, doover_value, comm)
 
             elif tag_mapping.mode.value == EnipTagSyncMode.SYNC_DOOVER_PREFERRED:
