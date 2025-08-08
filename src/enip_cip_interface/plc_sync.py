@@ -72,7 +72,12 @@ class PlcSyncTask:
 
     ## Sync Helpers
     def get_sync_values(self, tag_mapping: Any, comm: PLC):
-        plc_value = comm.Read(tag_mapping.plc_tag.value)
+        plc_response = comm.Read(tag_mapping.plc_tag.value)
+        if plc_response.Status == "Success":
+            plc_value = plc_response.Value
+        else:
+            logging.warning(f"Failed to read PLC tag {tag_mapping.plc_tag.value}: {plc_response.Status}")
+            plc_value = None
         doover_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
         last_agreed = self.last_sync_agreed_values.get(tag_mapping.plc_tag.value, None)
         return plc_value, doover_value, last_agreed
@@ -114,7 +119,7 @@ class PlcSyncTask:
                     if last_agreed is None or self.has_changed(last_agreed, doover_value):
                         self.propogate_to_plc(tag_mapping, doover_value, comm)
                     elif self.has_changed(last_agreed, plc_value):
-                        self.propogate_to_doover(tag_mapping, plc_value)
+                        updates.append(self.propogate_to_doover(tag_mapping, plc_value))
 
             elif tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
