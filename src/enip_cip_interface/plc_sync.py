@@ -14,10 +14,7 @@ class PlcSyncTask:
         self.plc_config = plc_config
 
         self._task = None
-        self.last_read_values = {}
-        self.last_tag_value = {}
-        self.dda_changes = []
-        self.enip_changes = []
+        self.task_run_times = {} # A dict of the timestamp and the time in seconds the task took to run
 
         self.last_sync_agreed_values = {}
 
@@ -37,6 +34,20 @@ class PlcSyncTask:
         if self._task is not None:
             self._task.cancel()
             self._task = None
+
+    @property
+    def average_task_time(self):
+        if not self.task_run_times:
+            return 0
+        return sum(self.task_run_times.values()) / len(self.task_run_times)
+
+    @property
+    def sync_speed_hz(self):
+        if not self.task_run_times:
+            return 0
+        timestamps = list(self.task_run_times.keys())
+        timestamps.sort()
+        return len(timestamps) / (timestamps[-1] - timestamps[0])
 
     async def _run(self):
         sync_period_secs = self.plc_config.sync_period.value
@@ -59,6 +70,12 @@ class PlcSyncTask:
                     while True:
                         start_time = time.time()
                         await self._sync_from_plc(comm)
+
+                        ## Record some analytics about the task run time
+                        self.task_run_times[start_time] = time.time() - start_time
+                        while len(self.task_run_times) > 10:
+                            self.task_run_times.pop(min(self.task_run_times.keys()))
+
                         sleep_time = sync_period_secs - (time.time() - start_time) 
                         if sleep_time > 0:
                             await asyncio.sleep(sleep_time)

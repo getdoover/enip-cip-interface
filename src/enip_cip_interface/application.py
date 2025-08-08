@@ -66,9 +66,11 @@ class EnipCipInterfaceApplication(Application):
         read_rate = self.get_loop_rate([op.timestamp for op in self.enip_server.pop_read_operations()])
         write_rate = self.get_loop_rate(self.enip_write_ts)
         logging.info(f"Channel update rate: {channel_rate:.2f} Hz")
+        for plc_sync_task in self._plc_sync_tasks:
+            logging.info(f"PLC Sync Task {plc_sync_task.plc_name} running at {plc_sync_task.sync_speed_hz:.2f} Hz: Average task time: {plc_sync_task.average_task_time:.2f} seconds")
         logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
         logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
-
+        
         await asyncio.sleep(10)
 
     async def enip_write_task(self):
