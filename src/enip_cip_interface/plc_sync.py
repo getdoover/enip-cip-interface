@@ -100,10 +100,12 @@ class PlcSyncTask:
         return plc_value, doover_value, last_agreed
     
     def propogate_to_plc(self, tag_mapping: Any, tag_value: Any, comm: PLC):
+        logging.info(f"{self.plc_name} PLC TASK: Propogating to PLC: {tag_mapping.plc_tag.value} -> {tag_value}")
         comm.Write(tag_mapping.plc_tag.value, tag_value)
         self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
     
     def propogate_to_doover(self, tag_mapping: Any, tag_value: Any):
+        logging.info(f"{self.plc_name} PLC TASK: Propogating to Doover: {tag_mapping.plc_tag.value} -> {tag_value}")
         self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
         channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, tag_value)
         return channel_msg
