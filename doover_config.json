@@ -26,6 +26,14 @@
                     "description": "The port to host an ENIP server on",
                     "default": 44818
                 },
+                "enable_enip_server": {
+                    "title": "Enable ENIP Server",
+                    "x-name": "enable_enip_server",
+                    "x-hidden": false,
+                    "type": "boolean",
+                    "description": "Whether to enable the ENIP server",
+                    "default": false
+                },
                 "tag_namespace_separator": {
                     "title": "Tag Namespace Separator",
                     "x-name": "tag_namespace_separator",

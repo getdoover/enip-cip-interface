@@ -12,6 +12,7 @@ class EnipCipInterfaceConfig(config.Schema):
 
     def __init__(self):
         self.port = config.Integer("Port", default=44818, description="The port to host an ENIP server on")
+        self.enable_enip_server = config.Boolean("Enable ENIP Server", default=False, description="Whether to enable the ENIP server")
         self.tag_namespace_separator = config.String("Tag Namespace Separator", default="__", description="The separator to use between tag namespaces")
         self.plcs = config.Array("PLCs", element=self.construct_plc(), description="The PLCs to connect to")
 
