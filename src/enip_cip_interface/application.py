@@ -119,7 +119,10 @@ class EnipCipInterfaceApplication(Application):
         return 0.0
 
     def on_tag_update(self, channel_name: str, channel_values: Dict[str, Any]):
-        if self.enip_server is None and self.config.enable_enip_server.value:
+        self.channel_update_ts = self.log_ts(self.channel_update_ts)
+        if not self.config.enable_enip_server.value:
+            return
+        if self.enip_server is None:
             logging.warning("ENIP server not initialized, skipping tag update")
             return
         logging.debug(f"Channel update from channel {channel_name}: {channel_values}")
@@ -130,8 +133,6 @@ class EnipCipInterfaceApplication(Application):
         tag_values = {tag.name: tag.current_value for tag in self.tags}
         logging.debug(f"Writing tag values: {tag_values}")
         self.enip_server.write_tags(tag_values)
-
-        self.channel_update_ts = self.log_ts(self.channel_update_ts)
 
     def generate_tags(self, value: Any, prefixes: list[str] = []):
         tags = []
