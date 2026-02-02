@@ -1,80 +1,55 @@
-# Doover Application Template
+# ENIP CIP Interface
 
-This repository serves as a template for creating Doover applications.
+<!-- ![Doover Logo](https://doover.com/wp-content/uploads/Doover-Logo-Landscape-Navy-padded-small.png) -->
+<img src="https://doover.com/wp-content/uploads/Doover-Logo-Landscape-Navy-padded-small.png" alt="App Icon" style="max-width: 300px;">
 
-It provides a structured layout for application code, deployment configurations, simulators, and tests. The template is
-designed to simplify the development and deployment of Doover-compatible applications.
+**Provide an EtherNet/IP (CIP) interface for PLC communication and tag synchronization.**
 
-The basic structure of the repository is as follows:
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/getdoover/enip-cip-interface)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/getdoover/enip-cip-interface/blob/main/LICENSE)
 
-## Getting Started
+[Configuration](#configuration) | [Developer](https://github.com/getdoover/enip-cip-interface/blob/main/DEVELOPMENT.md) | [Need Help?](#need-help)
 
-```
-README.md           <-- This file
-pyproject.toml      <-- Python project configuration file (including dependencies)
-Dockerfile          <-- Dockerfile for building the application image
-doover_config.json  <-- Configuration file for doover
+<br/>
 
-src/enip_cip_interface/   <-- Application directory
-  application.py    <-- Main application code
-  app_config.py     <-- Config schema definition
-  app_ui.py         <-- UI code (if applicable)
-  app_state.py      <-- State machine (if applicable)
+## Overview
 
-simulator/
-  app_config.json   <-- Sample configuration for the simulator
-  docker-compose.yml <-- Docker Compose file for the simulator
-  
-tests/
-    test_imports.py  <-- Test file for the application
-```
+Provide an EtherNet/IP (CIP) interface for PLC communication and tag synchronization.
 
-The `doover_config.json` file is the doover configuration file for the application. 
+<br/>
 
-It defines all metadata about the application, including name, short and long description, 
-dependent apps, image name, owner organisation, container registry and more.
+## Configuration
 
-### Prerequisites
+| Setting | Description | Default |
+|---------|-------------|---------|
+| **Port** | Port to host an ENIP server on | `44818` |
+| **Enable ENIP Server** | Whether to enable the ENIP server | `false` |
+| **Tag Namespace Separator** | Separator between namespaces | `__` |
+| **PLCs** | List of PLCs with tag mappings | `Required` |
 
-- Docker and Docker Compose installed
-- Python 3.11 or later (if running locally)
-- Pipenv for managing Python dependencies
+<br/>
+## Integrations
 
-### Running Locally
+This is a standalone app with no dependencies on other Doover apps.
 
-1. Run the application:
+<br/>
 
-```bash
-doover app run
-```
+## Need Help?
 
-## Simulators
+- Email: support@doover.com
+- [Community Forum](https://doover.com/community)
+- [Full Documentation](https://docs.doover.com)
+- [Developer Documentation](https://github.com/getdoover/enip-cip-interface/blob/main/DEVELOPMENT.md)
 
-The `simulator/` directory contains tools for simulating application behavior. For example:
+<br/>
 
-- `app_config.json`: Sample configuration file for the app.
-- `docker-compose.yml`: Defines services for running the application.
+## Version History
 
-You can find a sample simulator in the `simulator/sample/` directory. While it is fairly bare-bones, it shows
-positioning of the simulator in the application structure, and how to start the simulator alongside your application.
+### v1.0.0 (Current)
+- Initial release
 
-## Testing
+<br/>
 
-Run the tests using the following command:
+## License
 
-```bash
-pytest tests/
-```
-
-## Deployment
-
-The `deployment/` directory contains deployment configurations, including a `docker-compose.yml` file for orchestrating
-services.
-
-## Customization
-
-To create your own Doover application:
-
-1. Modify the application logic in the appropriate directory.
-2. Update the simulator and test configurations as needed.
-3. Adjust deployment configurations to suit your requirements.
+This app is licensed under the [Apache License 2.0](https://github.com/getdoover/enip-cip-interface/blob/main/LICENSE).

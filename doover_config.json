@@ -182,6 +182,15 @@
         "container_registry_profile": "88953909-e9c4-4f81-9ec0-56239d4b0a2e",
         "key": "faa9f767-dbb1-40e8-bd1f-e81bc83f5dff",
         "repo_branch": "main",
-        "staging_config": {}
+        "staging_config": {},
+        "lambda_config": {},
+        "owner_org_id": null,
+        "container_registry_profile_id": "93955828574386692",
+        "id": "144012894672045578",
+        "organisation_id": null,
+        "code_repo_id": null,
+        "export_config_command": null,
+        "run_command": null,
+        "lambda_arn": null
     }
 }
