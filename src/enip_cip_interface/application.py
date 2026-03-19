@@ -46,9 +46,12 @@ class EnipCipInterfaceApplication(Application):
             tag_contents = {"TEST": True}
         self.tags = self.generate_tags(tag_contents)
         logging.info(f"Generated initial tags: {self.tags}")
-        self.enip_server = EnipServer(port=self.config.port.value, tags=self.tags)
 
-        self._write_task = asyncio.create_task(self.enip_write_task())
+        if self.config.enable_enip_server.value:
+            self.enip_server = EnipServer(port=self.config.port.value, tags=self.tags)
+            self._write_task = asyncio.create_task(self.enip_write_task())
+        else:
+            logging.info("ENIP server disabled by config")
 
         for plc_config in self.config.plcs.elements:
             new_plc = PlcSyncTask(self, plc_config)
@@ -63,11 +66,13 @@ class EnipCipInterfaceApplication(Application):
         ## Every 10 seconds publish some analytics about the interactions
 
         channel_rate = self.get_loop_rate(self.channel_update_ts)
-        read_rate = self.get_loop_rate([op.timestamp for op in self.enip_server.pop_read_operations()])
-        write_rate = self.get_loop_rate(self.enip_write_ts)
         logging.info(f"Channel update rate: {channel_rate:.2f} Hz")
-        logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
-        logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
+
+        if self.enip_server is not None:
+            read_rate = self.get_loop_rate([op.timestamp for op in self.enip_server.pop_read_operations()])
+            write_rate = self.get_loop_rate(self.enip_write_ts)
+            logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
+            logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
 
         await asyncio.sleep(10)
 
@@ -117,17 +122,15 @@ class EnipCipInterfaceApplication(Application):
             logging.info(f"{tag.name}: {tag.tag_type} {tag.current_value}")
 
     def on_tag_update(self, channel_name: str, channel_values: Dict[str, Any]):
-        if self.enip_server is None:
-            logging.warning("ENIP server not initialized, skipping tag update")
-            return
         logging.debug(f"Channel update from channel {channel_name}: {channel_values}")
         self.tags = self.generate_tags(channel_values)
         logging.debug(f"Generated tags: {self.tags}")
-        self.enip_server.set_tags(self.tags)
 
-        tag_values = {tag.name: tag.current_value for tag in self.tags}
-        logging.debug(f"Writing tag values: {tag_values}")
-        self.enip_server.write_tags(tag_values)
+        if self.enip_server is not None:
+            self.enip_server.set_tags(self.tags)
+            tag_values = {tag.name: tag.current_value for tag in self.tags}
+            logging.debug(f"Writing tag values: {tag_values}")
+            self.enip_server.write_tags(tag_values)
 
         self.channel_update_ts = self.log_ts(self.channel_update_ts)
 

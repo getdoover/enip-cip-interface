@@ -18,6 +18,14 @@
             "title": "Application Config",
             "type": "object",
             "properties": {
+                "enable_enip_server": {
+                    "title": "Enable ENIP Server",
+                    "x-name": "enable_enip_server",
+                    "x-hidden": false,
+                    "type": "boolean",
+                    "description": "Whether to start the ENIP server",
+                    "default": true
+                },
                 "port": {
                     "title": "Port",
                     "x-name": "port",
@@ -132,14 +140,21 @@
                                             "x-hidden": false,
                                             "type": "string",
                                             "description": "The mode to use for the PLC tag mapping",
-                                            "default": "Read from PLC"
+                                            "default": "Write to PLC"
                                         },
-                                        "doover_tag": {
-                                            "title": "Doover Tag",
-                                            "x-name": "doover_tag",
+                                        "doover_read_tag": {
+                                            "title": "Doover Read Tag",
+                                            "x-name": "doover_read_tag",
                                             "x-hidden": false,
                                             "type": "string",
-                                            "description": "The tag to map to the PLC. Namespaces are separated by the tag namespace separator."
+                                            "description": "The tag to read from Doover to write to the PLC. Namespaces are separated by the tag namespace separator."
+                                        },
+                                        "doover_write_tag": {
+                                            "title": "Doover Write Tag",
+                                            "x-name": "doover_write_tag",
+                                            "x-hidden": false,
+                                            "type": "string",
+                                            "description": "For Syncing modes. The tag to write to the Doover from the PLC. Namespaces are separated by the tag namespace separator."
                                         },
                                         "plc_tag": {
                                             "title": "PLC Tag",
@@ -151,7 +166,8 @@
                                     },
                                     "additionalElements": true,
                                     "required": [
-                                        "doover_tag",
+                                        "doover_read_tag",
+                                        "doover_write_tag",
                                         "plc_tag"
                                     ]
                                 }

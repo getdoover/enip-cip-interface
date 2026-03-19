@@ -72,8 +72,12 @@ class PlcSyncTask:
 
     ## Sync Helpers
     def get_sync_values(self, tag_mapping: Any, comm: PLC):
-        plc_value = comm.Read(tag_mapping.plc_tag.value)
-        doover_value = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
+        result = comm.Read(tag_mapping.plc_tag.value)
+        try:
+            plc_value = comm.Read(tag_mapping.plc_tag.value)
+        except Exception as e:
+            plc_value = result.Value if result.Status == "Success" else None
+        doover_value = self.app.retreive_doover_tag_value(tag_mapping.doover_read_tag.value)
         last_agreed = self.last_sync_agreed_values.get(tag_mapping.plc_tag.value, None)
         return plc_value, doover_value, last_agreed
     
@@ -83,7 +87,7 @@ class PlcSyncTask:
     
     def propogate_to_doover(self, tag_mapping: Any, tag_value: Any):
         self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
-        channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, tag_value)
+        channel_msg = self.app.to_channel_message(tag_mapping.doover_write_tag.value, tag_value)
         return channel_msg
 
     def has_changed(self, value1: Any, value2: Any, float_tolerance: float = 0.01):
@@ -119,11 +123,11 @@ class PlcSyncTask:
             elif tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
                 if result.Status == "Success" and result.Value is not None:
-                    channel_msg = self.app.to_channel_message(tag_mapping.doover_tag.value, result.Value)
+                    channel_msg = self.app.to_channel_message(tag_mapping.doover_write_tag.value, result.Value)
                     updates.append(channel_msg)
 
             elif tag_mapping.mode.value == EnipTagSyncMode.TO_PLC:
-                result = self.app.retreive_doover_tag_value(tag_mapping.doover_tag.value)
+                result = self.app.retreive_doover_tag_value(tag_mapping.doover_read_tag.value)
                 if result is not None:
                     t = comm.Write(tag_mapping.plc_tag.value, result)
 
