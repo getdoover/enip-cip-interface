@@ -14,10 +14,7 @@ class PlcSyncTask:
         self.plc_config = plc_config
 
         self._task = None
-        self.last_read_values = {}
-        self.last_tag_value = {}
-        self.dda_changes = []
-        self.enip_changes = []
+        self.task_run_times = {} # A dict of the timestamp and the time in seconds the task took to run
 
         self.last_sync_agreed_values = {}
 
@@ -37,6 +34,23 @@ class PlcSyncTask:
         if self._task is not None:
             self._task.cancel()
             self._task = None
+
+    @property
+    def average_task_time(self):
+        if not self.task_run_times or len(self.task_run_times) == 0:
+            return 0
+        return sum(self.task_run_times.values()) / len(self.task_run_times)
+
+    @property
+    def sync_speed_hz(self):
+        if not self.task_run_times:
+            return 0
+        timestamps = list(self.task_run_times.keys())
+        timestamps.sort()
+        dt = timestamps[-1] - timestamps[0]
+        if dt == 0:
+            return 0
+        return len(timestamps) / dt
 
     async def _run(self):
         sync_period_secs = self.plc_config.sync_period.value
@@ -59,6 +73,12 @@ class PlcSyncTask:
                     while True:
                         start_time = time.time()
                         await self._sync_from_plc(comm)
+
+                        ## Record some analytics about the task run time
+                        self.task_run_times[start_time] = time.time() - start_time
+                        while len(self.task_run_times) > 10:
+                            self.task_run_times.pop(min(self.task_run_times.keys()))
+
                         sleep_time = sync_period_secs - (time.time() - start_time) 
                         if sleep_time > 0:
                             await asyncio.sleep(sleep_time)
@@ -72,20 +92,23 @@ class PlcSyncTask:
 
     ## Sync Helpers
     def get_sync_values(self, tag_mapping: Any, comm: PLC):
-        result = comm.Read(tag_mapping.plc_tag.value)
-        try:
-            plc_value = comm.Read(tag_mapping.plc_tag.value)
-        except Exception as e:
-            plc_value = result.Value if result.Status == "Success" else None
+        plc_response = comm.Read(tag_mapping.plc_tag.value)
+        if plc_response.Status == "Success":
+            plc_value = plc_response.Value
+        else:
+            logging.warning(f"Failed to read PLC tag {tag_mapping.plc_tag.value}: {plc_response.Status}")
+            plc_value = None
         doover_value = self.app.retreive_doover_tag_value(tag_mapping.doover_read_tag.value)
         last_agreed = self.last_sync_agreed_values.get(tag_mapping.plc_tag.value, None)
         return plc_value, doover_value, last_agreed
     
     def propogate_to_plc(self, tag_mapping: Any, tag_value: Any, comm: PLC):
+        logging.info(f"{self.plc_name} PLC TASK: Propogating to PLC: {tag_mapping.plc_tag.value} -> {tag_value}")
         comm.Write(tag_mapping.plc_tag.value, tag_value)
         self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
     
     def propogate_to_doover(self, tag_mapping: Any, tag_value: Any):
+        logging.info(f"{self.plc_name} PLC TASK: Propogating to Doover: {tag_mapping.plc_tag.value} -> {tag_value}")
         self.last_sync_agreed_values[tag_mapping.plc_tag.value] = tag_value
         channel_msg = self.app.to_channel_message(tag_mapping.doover_write_tag.value, tag_value)
         return channel_msg
@@ -107,9 +130,9 @@ class PlcSyncTask:
             if tag_mapping.mode.value == EnipTagSyncMode.SYNC_PLC_PREFERRED:
                 plc_value, doover_value, last_agreed = self.get_sync_values(tag_mapping, comm)
                 if plc_value is not None:
-                    if last_agreed is None or self.has_changed(last_agreed, plc_value):
+                    if last_agreed is None or self.has_changed(last_agreed, plc_value) or doover_value is None:
                         updates.append(self.propogate_to_doover(tag_mapping, plc_value))
-                    elif self.has_changed(last_agreed, doover_value):
+                    elif doover_value is not None and self.has_changed(last_agreed, doover_value):
                         self.propogate_to_plc(tag_mapping, doover_value, comm)
 
             elif tag_mapping.mode.value == EnipTagSyncMode.SYNC_DOOVER_PREFERRED:
@@ -118,7 +141,7 @@ class PlcSyncTask:
                     if last_agreed is None or self.has_changed(last_agreed, doover_value):
                         self.propogate_to_plc(tag_mapping, doover_value, comm)
                     elif self.has_changed(last_agreed, plc_value):
-                        self.propogate_to_doover(tag_mapping, plc_value)
+                        updates.append(self.propogate_to_doover(tag_mapping, plc_value))
 
             elif tag_mapping.mode.value == EnipTagSyncMode.FROM_PLC:
                 result = comm.Read(tag_mapping.plc_tag.value)
@@ -143,9 +166,11 @@ class PlcSyncTask:
 
         logging.debug(f"Synced from PLC {self.plc_name}: {updates_to_publish}")
         if updates_to_publish:
+            logging.info(f"{self.plc_name} PLC TASK: Publishing updates to channel: {updates_to_publish}")
             await self.app.device_agent.publish_to_channel_async(
                 "tag_values",
                 updates_to_publish,
                 record_log=False,
                 max_age=None,
             )
+            logging.info(f"{self.plc_name} PLC TASK: Finished Publish")

@@ -8,7 +8,7 @@ from typing import Dict, Any, List
 from pydoover.docker import Application
 
 from .app_config import EnipCipInterfaceConfig
-from .enip_server import EnipServer, EnipTag, EnipReadOp, EnipWriteOp
+from .enip_server import EnipServer, EnipTag
 from .plc_sync import PlcSyncTask
 
 log = logging.getLogger()
@@ -50,8 +50,6 @@ class EnipCipInterfaceApplication(Application):
         if self.config.enable_enip_server.value:
             self.enip_server = EnipServer(port=self.config.port.value, tags=self.tags)
             self._write_task = asyncio.create_task(self.enip_write_task())
-        else:
-            logging.info("ENIP server disabled by config")
 
         for plc_config in self.config.plcs.elements:
             new_plc = PlcSyncTask(self, plc_config)
@@ -66,14 +64,16 @@ class EnipCipInterfaceApplication(Application):
         ## Every 10 seconds publish some analytics about the interactions
 
         channel_rate = self.get_loop_rate(self.channel_update_ts)
+        
         logging.info(f"Channel update rate: {channel_rate:.2f} Hz")
-
-        if self.enip_server is not None:
+        for plc_sync_task in self._plc_sync_tasks:
+            logging.info(f"PLC Sync Task {plc_sync_task.plc_name} running at {plc_sync_task.sync_speed_hz:.2f} Hz: Average task time: {plc_sync_task.average_task_time:.2f} seconds")
+        
+        if self.config.enable_enip_server.value:
             read_rate = self.get_loop_rate([op.timestamp for op in self.enip_server.pop_read_operations()])
             write_rate = self.get_loop_rate(self.enip_write_ts)
             logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
             logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
-
         await asyncio.sleep(10)
 
     async def enip_write_task(self):
@@ -117,11 +117,13 @@ class EnipCipInterfaceApplication(Application):
             return rate
         return 0.0
 
-    def pretty_print_tags(self):
-        for tag in self.enip_server.tags.values():
-            logging.info(f"{tag.name}: {tag.tag_type} {tag.current_value}")
-
     def on_tag_update(self, channel_name: str, channel_values: Dict[str, Any]):
+        self.channel_update_ts = self.log_ts(self.channel_update_ts)
+        if not self.config.enable_enip_server.value:
+            return
+        if self.enip_server is None:
+            logging.warning("ENIP server not initialized, skipping tag update")
+            return
         logging.debug(f"Channel update from channel {channel_name}: {channel_values}")
         self.tags = self.generate_tags(channel_values)
         logging.debug(f"Generated tags: {self.tags}")
@@ -131,8 +133,6 @@ class EnipCipInterfaceApplication(Application):
             tag_values = {tag.name: tag.current_value for tag in self.tags}
             logging.debug(f"Writing tag values: {tag_values}")
             self.enip_server.write_tags(tag_values)
-
-        self.channel_update_ts = self.log_ts(self.channel_update_ts)
 
     def generate_tags(self, value: Any, prefixes: list[str] = []):
         tags = []
