@@ -11,6 +11,7 @@ class EnipTagSyncMode(config.Enum):
 class EnipCipInterfaceConfig(config.Schema):
 
     def __init__(self):
+        self.enable_enip_server = config.Boolean("Enable ENIP Server", default=True, description="Whether to start the ENIP server")
         self.port = config.Integer("Port", default=44818, description="The port to host an ENIP server on")
         self.enable_enip_server = config.Boolean("Enable ENIP Server", default=False, description="Whether to enable the ENIP server")
         self.tag_namespace_separator = config.String("Tag Namespace Separator", default="__", description="The separator to use between tag namespaces")
@@ -21,7 +22,7 @@ class EnipCipInterfaceConfig(config.Schema):
         plc_tag_mapping.add_elements(
             config.Enum(
                 "Mode",
-                default=EnipTagSyncMode.FROM_PLC,
+                default=EnipTagSyncMode.TO_PLC,
                 description="The mode to use for the PLC tag mapping",
                 choices=[
                     EnipTagSyncMode.FROM_PLC,
@@ -30,7 +31,8 @@ class EnipCipInterfaceConfig(config.Schema):
                     EnipTagSyncMode.SYNC_DOOVER_PREFERRED,
                 ]
             ),
-            config.String("Doover Tag", description="The tag to map to the PLC. Namespaces are separated by the tag namespace separator."),
+            config.String("Doover Read Tag", description="The tag to read from Doover to write to the PLC. Namespaces are separated by the tag namespace separator."),
+            config.String("Doover Write Tag", description="For Syncing modes. The tag to write to the Doover from the PLC. Namespaces are separated by the tag namespace separator."),
             config.String("PLC Tag", description="The tag to map to the PLC"),
         )
 

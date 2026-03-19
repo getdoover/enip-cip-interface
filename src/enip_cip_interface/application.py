@@ -74,7 +74,6 @@ class EnipCipInterfaceApplication(Application):
             write_rate = self.get_loop_rate(self.enip_write_ts)
             logging.info(f"ENIP Server Read rate: {read_rate:.2f} Hz")
             logging.info(f"ENIP Server Write rate: {write_rate:.2f} Hz")
-        
         await asyncio.sleep(10)
 
     async def enip_write_task(self):
@@ -128,11 +127,12 @@ class EnipCipInterfaceApplication(Application):
         logging.debug(f"Channel update from channel {channel_name}: {channel_values}")
         self.tags = self.generate_tags(channel_values)
         logging.debug(f"Generated tags: {self.tags}")
-        self.enip_server.set_tags(self.tags)
 
-        tag_values = {tag.name: tag.current_value for tag in self.tags}
-        logging.debug(f"Writing tag values: {tag_values}")
-        self.enip_server.write_tags(tag_values)
+        if self.enip_server is not None:
+            self.enip_server.set_tags(self.tags)
+            tag_values = {tag.name: tag.current_value for tag in self.tags}
+            logging.debug(f"Writing tag values: {tag_values}")
+            self.enip_server.write_tags(tag_values)
 
     def generate_tags(self, value: Any, prefixes: list[str] = []):
         tags = []

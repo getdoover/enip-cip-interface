@@ -14,16 +14,16 @@
                 {
                     "mode": "Read from PLC",
                     "plc_tag": "sim_generator__temperature",
-                    "doover_tag": "plc_1__temperature"
+                    "doover_read_tag": "plc_1__temperature"
                 },
                 {
                     "mode": "Read from PLC",
                     "plc_tag": "sim_generator__temperature",
-                    "doover_tag": "global_temperature"
+                    "doover_read_tag": "global_temperature"
                 },
                 {
                     "mode": "Write to PLC",
-                    "doover_tag": "sim_generator__pressure",
+                    "doover_write_tag": "sim_generator__pressure",
                     "plc_tag": "plc_1__pressure"
                 }
             ]

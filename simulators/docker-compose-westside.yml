@@ -35,25 +35,22 @@ services:
   #     - DDA_URI=device_agent:50051
   #     - PLC_HOST=sample_application
 
-  sample_application:
+  enip_cip_interface:
     build: ../
-    networks:
-      - enip_network
-    ports:
-      - 44818:44818
+    # networks:
+    #   - enip_network
+    network_mode: host
     restart: unless-stopped
     # depends_on:
     #   - device_agent
     #   - sim_generator
     environment:
       - APP_KEY=enip_cip_interface-1
-      - DDA_URI=172.20.10.2:50051
       - HEALTHCHECK_PORT=49203
-
-    #   - CONFIG_FP=/app_config.json
+      - CONFIG_FP=/app/simulators/westside_config.json
     # volumes:
     #   - ./app_config.json:/app_config.json
 
-networks:
-  enip_network:
-    driver: bridge
+# networks:
+#   enip_network:
+#     driver: bridge
