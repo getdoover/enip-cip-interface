@@ -1,6 +1,5 @@
 import time
 import random
-import sys
 import logging
 import asyncio
 import traceback
@@ -353,7 +352,7 @@ if __name__ == "__main__":
         values = {}
         for tag in tags:
             values[tag.name] = random.random()
-        logging.info(f"Updating values...")
+        logging.info("Updating values...")
         server.write_tags(values)
 
         # After 20 seconds, add the extra tags

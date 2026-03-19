@@ -153,6 +153,10 @@ class PlcSyncTask:
                 result = self.app.retreive_doover_tag_value(tag_mapping.doover_read_tag.value)
                 if result is not None:
                     t = comm.Write(tag_mapping.plc_tag.value, result)
+                    if t.Status == "Success":
+                        logging.info(f"Successfully wrote {result} to {tag_mapping.plc_tag.value}")
+                    else:
+                        logging.error(f"Failed to write {result} to {tag_mapping.plc_tag.value}: {t.Status}")
 
 
         updates_to_publish: Dict[str, Any] = {}
